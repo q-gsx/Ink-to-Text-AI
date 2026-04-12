@@ -24,7 +24,7 @@ from bidi.algorithm import get_display
 # ============================================================
 st.set_page_config(
     page_title="Ink to text AI — Handwriting & Print OCR",
-    page_icon="https://i.ibb.co/21h613bH/LOGO.jpg", # يمكنك تغيير هذه الإيموجي أو وضع مسار لصورة من جهازك مثل "assets/icon.png"
+    page_icon="https://i.ibb.co/V0TcJzmL/LOGO2.jpg", # يمكنك تغيير هذه الإيموجي أو وضع مسار لصورة من جهازك مثل "assets/icon.png"
     layout="wide",
     initial_sidebar_state="expanded"
 )
