@@ -726,7 +726,8 @@ with tab_single:
             view_tab, edit_tab = st.tabs(["Preview", "Edit & Notes"])
 
             with view_tab:
-                st.markdown(f'<div class="output-box">{display}</div>', unsafe_allow_html=True)
+                preview_html = display.replace('\n', '<br>')
+                st.markdown(f'<div class="output-box">{preview_html}</div>', unsafe_allow_html=True)
 
             with edit_tab:
                 edited = st.text_area(
@@ -1028,7 +1029,8 @@ with tab_history:
                 hc2.metric("Chars", h["chars"])
                 hc3.metric("Language", h["lang"])
                 hc4.metric("Speed", f"{h['time']}s")
-                st.markdown(f'<div class="output-box">{clean_html(h["result"])}</div>', unsafe_allow_html=True)
+                hist_html = clean_html(h["result"]).replace('\n', '<br>')
+                st.markdown(f'<div class="output-box">{hist_html}</div>', unsafe_allow_html=True)
 
                 hd1, hd2 = st.columns(2)
                 with hd1:
