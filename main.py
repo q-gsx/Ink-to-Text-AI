@@ -296,7 +296,7 @@ class ArabicPDF(FPDF):
         fp = self._font_path
         if fp is not None and os.path.exists(fp):
             try:
-                self.add_font(self.FONT_REGULAR, '', fp)
+                self.add_font(self.FONT_REGULAR, '', fp, uni=True)
                 self._font_loaded = True
             except Exception:
                 self._font_loaded = False
