@@ -24,7 +24,7 @@ from bidi.algorithm import get_display
 # ============================================================
 st.set_page_config(
     page_title="Ink to text AI — Handwriting & Print OCR",
-    page_icon="https://i.ibb.co/V0TcJzmL/LOGO2.jpg", # يمكنك تغيير هذه الإيموجي أو وضع مسار لصورة من جهازك مثل "assets/icon.png"
+    page_icon="https://i.ibb.co/V0TcJzmL/LOGO2.jpg",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -32,8 +32,6 @@ st.set_page_config(
 # ============================================================
 # 2. CSS + FONT AWESOME INJECTION
 # ============================================================
-# CSS strings are in css_block.py (plain strings, no f-string interpolation)
-# to avoid Python 3.12 f-string brace conflicts with CSS { } syntax.
 from css_block import LIGHT_CSS, DARK_CSS
 
 def _inject_css():
@@ -58,7 +56,7 @@ SUPPORTED_FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tiff', 'tif']
 # ============================================================
 # 4. SESSION STATE INIT
 # ============================================================
-defaults = {
+defaults_state = {
     "extracted_result":    None,
     "processing_history":  [],
     "total_processed":     0,
@@ -71,7 +69,7 @@ defaults = {
     "show_raw":            False,
     "dark_mode":           False,
 }
-for k, v in defaults.items():
+for k, v in defaults_state.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
@@ -84,30 +82,24 @@ def file_size_mb(file_obj) -> float:
     file_obj.seek(0)
     return round(size, 2)
 
-
 def image_to_b64(pil_img: Image.Image, quality: int = 85) -> str:
     buf = io.BytesIO()
     pil_img.convert("RGB").save(buf, format="JPEG", quality=quality)
     return base64.b64encode(buf.getvalue()).decode("utf-8")
-
 
 def clean_html(text: str) -> str:
     text = text.replace('```html', '').replace('```', '')
     text = re.sub(r'>\s+<', '><', text)
     return text.strip()
 
-
 def strip_tags(text: str) -> str:
     return re.sub(r'<[^>]+>', '', text).strip()
-
 
 def count_words(text: str) -> int:
     return len(strip_tags(text).split())
 
-
 def count_chars(text: str) -> int:
     return len(strip_tags(text))
-
 
 def detect_language(text: str) -> str:
     arabic_chars  = len(re.findall(r'[\u0600-\u06FF]', text))
@@ -118,7 +110,6 @@ def detect_language(text: str) -> str:
         return "English"
     return "Mixed"
 
-
 def detect_content_type(text: str) -> str:
     if "<td>" in text.lower():
         return "جدول + نص"
@@ -127,14 +118,12 @@ def detect_content_type(text: str) -> str:
         return "بيانات رقمية"
     return "نص عادي"
 
-
 def file_hash(file_obj) -> str:
     file_obj.seek(0)
     h_full = hashlib.md5(file_obj.read()).hexdigest()
     h = h_full[0:8]
     file_obj.seek(0)
     return h
-
 
 def enhance_image(pil_img: Image.Image,
                   contrast: float = 1.3,
@@ -152,14 +141,12 @@ def enhance_image(pil_img: Image.Image,
         img = img.filter(ImageFilter.MedianFilter(size=3))
     return img
 
-
 def resize_for_api(pil_img: Image.Image, max_px: int = 2048) -> Image.Image:
     w, h = pil_img.size
     if max(w, h) > max_px:
         scale = max_px / max(w, h)
         pil_img = pil_img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
     return pil_img
-
 
 def shape_arabic(text: str) -> str:
     """Reshape and apply BiDi to a string for correct Arabic PDF rendering."""
@@ -174,7 +161,6 @@ def shape_arabic(text: str) -> str:
 def create_txt(content: str) -> bytes:
     clean = strip_tags(clean_html(content))
     return clean.encode("utf-8")
-
 
 def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
     html = f"""<!DOCTYPE html>
@@ -210,7 +196,6 @@ def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
 </body>
 </html>"""
     return html.encode("utf-8")
-
 
 def create_word_doc(content: str) -> bytes:
     doc = Document()
@@ -284,10 +269,6 @@ def create_word_doc(content: str) -> bytes:
     doc.save(buf)
     return buf.getvalue()
 
-
-# ------------------------------------------------------------------
-# PDF EXPORT — fully Arabic-aware, table support, professional layout
-# ------------------------------------------------------------------
 class ArabicPDF(FPDF):
     """FPDF subclass with Arabic helper utilities."""
 
@@ -396,7 +377,6 @@ class ArabicPDF(FPDF):
             self.ln()
         self.ln(3)
 
-
 def _extract_tables(html: str) -> list[dict]:
     """Return list of {headers, rows} dicts from HTML table tags."""
     tables_data = []
@@ -414,16 +394,9 @@ def _extract_tables(html: str) -> list[dict]:
         tables_data.append({"headers": headers, "rows": rows})
     return tables_data
 
-
 def create_pdf(content: str) -> bytes | None:
     """
     Generate a professional Arabic-ready PDF from extracted content.
-    Handles:
-      - Full Arabic reshaping + BiDi reordering
-      - Section headings (h1–h3 tags → styled titles)
-      - Tables → styled PDF tables
-      - Plain text → RTL body lines
-      - Header / footer on every page
     """
     try:
         current_dir  = os.path.dirname(os.path.abspath(__file__))
@@ -434,9 +407,6 @@ def create_pdf(content: str) -> bytes | None:
         pdf.add_page()
 
         cleaned = clean_html(content)
-
-        # ---- Split into segments: headings | tables | plain text ----
-        # We tokenise by tags so order is preserved
         pattern = re.compile(
             r'(<h[1-3][^>]*>.*?</h[1-3]>|<table[^>]*>.*?</table>)',
             re.DOTALL | re.IGNORECASE
@@ -447,36 +417,27 @@ def create_pdf(content: str) -> bytes | None:
             seg = seg.strip()
             if not seg:
                 continue
-
-            # Heading
             heading_match = re.match(r'<h[1-3][^>]*>(.*?)</h[1-3]>', seg, re.DOTALL | re.IGNORECASE)
             if heading_match:
                 heading_text = strip_tags(heading_match.group(1)).strip()
                 if heading_text:
                     pdf.section_title(heading_text)
                 continue
-
-            # Table
             if re.match(r'<table', seg, re.IGNORECASE):
                 tables_data = _extract_tables(seg)
                 for t in tables_data:
                     if t["headers"] or t["rows"]:
                         pdf.render_table(t["headers"], t["rows"])
                 continue
-
-            # Plain / mixed text — strip remaining tags, split into lines
             plain = strip_tags(seg)
             for line in plain.split('\n'):
                 line = line.strip()
                 if line:
                     pdf.body_line(line)
-
         return bytes(pdf.output())
-
     except Exception as e:
         st.warning(f"خطأ في إنشاء PDF: {e}")
         return None
-
 
 def create_json_export(content: str, meta: dict) -> bytes:
     data = {
@@ -490,7 +451,6 @@ def create_json_export(content: str, meta: dict) -> bytes:
         "char_count": count_chars(content),
     }
     return json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
-
 
 def create_csv_from_tables(content: str) -> bytes | None:
     tables = re.findall(r'<table>(.*?)</table>', content, re.DOTALL | re.IGNORECASE)
@@ -531,7 +491,6 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
         return text, elapsed
     else:
         raise RuntimeError(f"API Error {res.status_code}: {res.text[:300]}")
-
 
 def build_prompt(mode: str, extra_instructions: str = "", lang_hint: str = "auto") -> str:
     lang_note = "" if lang_hint == "auto" else f"Output language preference: {lang_hint}. "
@@ -576,8 +535,18 @@ def build_prompt(mode: str, extra_instructions: str = "", lang_hint: str = "auto
     return prompt
 
 # ============================================================
-# 8. SIDEBAR
+# 8. DEFAULTS & GLOBAL CONFIG ITEMS
 # ============================================================
+extraction_mode = "standard"
+auto_enhance = True
+contrast_val = 1.3
+sharpness_val = 1.4
+brightness_val = 1.05
+denoise_val = False
+api_temp = 0.0
+output_lang = "auto"
+extra_instr = ""
+max_img_dim = 2048
 
 # ============================================================
 # 9. HEADER + THEME TOGGLE
