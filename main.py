@@ -1134,13 +1134,13 @@ with tab_guide:
 st.markdown("""
 <div class="app-footer">
     <i class="fa-solid fa-pen-nib"></i>
-    <strong>Ink to text AI</strong>
+    <strong>Ink to text AI by Qays Hijjawi</strong>
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
     Clean OCR tool
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
     Powered by Gemini 2.0 Flash
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
     RTL ready
-    <br><span>&copy; 2025</span>
+    <br><span>&copy; 2026</span>
 </div>
 """, unsafe_allow_html=True)
