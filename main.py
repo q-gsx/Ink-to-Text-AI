@@ -634,7 +634,6 @@ with tab_single:
 
         if uploaded_file:
             img_raw = ImageOps.exif_transpose(Image.open(uploaded_file))
-
             if auto_enhance:
                 img_proc = enhance_image(
                     img_raw,
