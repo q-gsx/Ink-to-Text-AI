@@ -34,8 +34,7 @@ st.set_page_config(
 # ============================================================
 # CSS strings are in css_block.py (plain strings, no f-string interpolation)
 # to avoid Python 3.12 f-string brace conflicts with CSS { } syntax.
-from css_block import LIGHT_CSS, DARK_CSS
-
+from css_block import DARK_CSS
 def _inject_css():
     # استدعاء الوضع الداكن دائماً
     st.markdown(DARK_CSS, unsafe_allow_html=True)
