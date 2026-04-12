@@ -437,7 +437,8 @@ def create_pdf(content: str) -> bytes | None:
                 line = line.strip()
                 if line:
                     pdf.body_line(line)
-        return bytes(pdf.output())
+        out = pdf.output(dest='S')
+        return out.encode('latin-1') if isinstance(out, str) else bytes(out)
     except Exception as e:
         st.warning(f"خطأ في إنشاء PDF: {e}")
         return None
