@@ -48,7 +48,7 @@ _inject_css()
 
 # 3. CONSTANTS & CONFIG
 # ============================================================
-API_KEY = "AIzaSyC6NEa9ntoRcqXTWQwp3fdPOzSOYHAs_4I"
+API_KEY = "AIzaSyAR2FBLCMCzY6J_r_vSLyUi8sGTvuSGGpc"
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 MAX_IMAGE_SIZE_MB = 10
 SUPPORTED_FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tiff', 'tif']
