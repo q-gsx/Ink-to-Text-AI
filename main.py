@@ -516,7 +516,7 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
         }],
         "generationConfig": {
             "temperature":     temperature,
-            "maxOutputTokens": 4096,
+            "maxOutputTokens": 8192,
             "topP":            0.95,
         }
     }
@@ -538,6 +538,7 @@ def build_prompt(mode: str, extra_instructions: str = "", lang_hint: str = "auto
         "Extract ALL text and tables from this image exactly as they appear. "
         "Preserve original structure, formatting and layout. "
         "Render any table as valid HTML <table> with <tr> and <td> tags. "
+        "CRITICAL: Do NOT wrap the output in markdown code blocks like ```html. Output raw plain text and tags ONLY! "
         "Do NOT add any commentary, explanation, or preamble — output raw content only. "
         f"{lang_note}"
     )
@@ -675,15 +676,16 @@ with _hcol1:
 """, unsafe_allow_html=True)
 with _hcol2:
     _is_dark = st.session_state.get("dark_mode", False)
-    _icon    = "fa-sun" if _is_dark else "fa-moon"
-    _label   = "Light" if _is_dark else "Dark"
-    _toggled = st.button(
-        f"{'☀️' if _is_dark else '🌙'}  {_label} Mode",
+    
+    st.markdown("<div style='margin-top:0.75rem;'></div>", unsafe_allow_html=True)
+    new_dark_state = st.toggle(
+        "Dark Theme",
+        value=_is_dark,
         key="theme_toggle",
-        help="Toggle dark / light theme"
+        help="Switch between Light and Dark interface"
     )
-    if _toggled:
-        st.session_state.dark_mode = not _is_dark
+    if new_dark_state != _is_dark:
+        st.session_state.dark_mode = new_dark_state
         st.rerun()
 
 # ============================================================
@@ -748,22 +750,18 @@ with tab_single:
             if st.button("Extract Text Now", key="extract_btn"):
                 prompt = build_prompt(extraction_mode, extra_instr, output_lang)
 
-                with st.spinner("AI processing your document..."):
-                    progress = st.progress(0, text="Preparing image...")
+                with st.status("AI is processing your document...", expanded=True) as status:
+                    st.write("✨ Preparing and formatting image...")
                     time.sleep(0.3)
-                    progress.progress(20, text="Encoding image...")
-
+                    
                     try:
                         img_b64 = image_to_b64(img_proc)
-                        progress.progress(45, text="Sending to Gemini AI...")
+                        st.write("🚀 Sending to Gemini Data Engine...")
 
                         result, elapsed = call_gemini(img_b64, prompt, temperature=api_temp)
-                        progress.progress(85, text="Parsing response...")
+                        st.write("📊 Parsing and structuring response...")
                         time.sleep(0.2)
-                        progress.progress(100, text="Done!")
-                        time.sleep(0.3)
-                        progress.empty()
-
+                        
                         st.session_state.extracted_result   = result
                         st.session_state.last_process_time  = elapsed
                         st.session_state.total_processed   += 1
@@ -780,13 +778,16 @@ with tab_single:
                             "result":    result,
                         })
 
+                        status.update(label=f"Done in {elapsed}s! Extracted {count_words(result):,} words.", state="complete", expanded=False)
+                        st.balloons()
+                        
                         st.success(
-                            f"Extracted in {elapsed}s — "
+                            f"Extraction Successful — "
                             f"{count_words(result):,} words · {count_chars(result):,} chars"
                         )
 
                     except Exception as e:
-                        progress.empty()
+                        status.update(label="Extraction encountered an error", state="error", expanded=False)
                         st.error(f"Extraction failed: {e}")
         else:
             st.markdown("""
