@@ -48,7 +48,11 @@ _inject_css()
 
 # 3. CONSTANTS & CONFIG
 # ============================================================
-API_KEY = "AIzaSyAR2FBLCMCzY6J_r_vSLyUi8sGTvuSGGpc"
+try:
+    API_KEY = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    API_KEY = "PLEASE_SET_YOUR_API_KEY_IN_SECRETS"
+
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 MAX_IMAGE_SIZE_MB = 10
 SUPPORTED_FORMATS = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'tiff', 'tif']
@@ -403,7 +407,6 @@ def create_pdf(content: str) -> bytes | None:
         font_path    = os.path.join(current_dir, 'Arial.ttf')
 
         pdf = ArabicPDF(font_path=font_path)
-        pdf.set_rtl(True)
         pdf.add_page()
 
         cleaned = clean_html(content)
@@ -466,8 +469,6 @@ def create_csv_from_tables(content: str) -> bytes | None:
     return "\n".join(csv_lines).encode("utf-8")
 
 # ============================================================
-# 7. GEMINI API CALL
-# ============================================================
 def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[str, float]:
     payload = {
         "contents": [{
@@ -482,15 +483,38 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
             "topP":            0.95,
         }
     }
-    url = f"{GEMINI_URL}?key={API_KEY}"
+    
+    # قائمة بجميع الموديلات الممكنة لتفادي حظر موديل معين
+    models_to_try = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-flash-latest",
+        "gemini-1.5-pro",
+        "gemini-pro"
+    ]
+    
+    last_error = ""
     t0  = time.time()
-    res = requests.post(url, json=payload, timeout=60)
-    elapsed = float(f"{time.time() - t0:.2f}")
-    if res.status_code == 200:
-        text = res.json()['candidates'][0]['content']['parts'][0]['text']
-        return text, elapsed
-    else:
-        raise RuntimeError(f"API Error {res.status_code}: {res.text[:300]}")
+    
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={API_KEY}"
+        try:
+            res = requests.post(url, json=payload, timeout=30)
+            if res.status_code == 200:
+                text = res.json()['candidates'][0]['content']['parts'][0]['text']
+                elapsed = float(f"{time.time() - t0:.2f}")
+                return text, elapsed
+            else:
+                last_error = f"{res.status_code} ({model_name}): {res.text[:150]}"
+                continue # حاول الموديل الذي بعده
+        except Exception as e:
+            last_error = f"Request Exception: {str(e)}"
+            continue
+            
+    # إذا فشلت جميع الموديلات
+    raise RuntimeError(f"All available models failed! Last seen error: {last_error}")
 
 def build_prompt(mode: str, extra_instructions: str = "", lang_hint: str = "auto") -> str:
     lang_note = "" if lang_hint == "auto" else f"Output language preference: {lang_hint}. "
@@ -636,7 +660,6 @@ with tab_single:
 
                 with st.status("AI is processing your document...", expanded=True) as status:
                     st.write("✨ Preparing and formatting image...")
-                    time.sleep(0.3)
                     
                     try:
                         img_b64 = image_to_b64(img_proc)
@@ -644,7 +667,6 @@ with tab_single:
 
                         result, elapsed = call_gemini(img_b64, prompt, temperature=api_temp)
                         st.write("📊 Parsing and structuring response...")
-                        time.sleep(0.2)
                         
                         st.session_state.extracted_result   = result
                         st.session_state.last_process_time  = elapsed
