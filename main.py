@@ -37,17 +37,9 @@ st.set_page_config(
 from css_block import LIGHT_CSS, DARK_CSS
 
 def _inject_css():
-    is_dark = st.session_state.get("dark_mode", False)
-    payload  = LIGHT_CSS
-    if is_dark:
-        payload += DARK_CSS
-    if hasattr(st, "html"):
-        st.html(payload)
-    else:
-        st.markdown(payload, unsafe_allow_html=True)
-
-_inject_css()
-
+    # استدعاء الوضع الداكن دائماً
+    st.markdown(DARK_CSS, unsafe_allow_html=True)
+    
 # 3. CONSTANTS & CONFIG
 # ============================================================
 API_KEY = "AIzaSyDaPrcKqwnUi1q_A8FQHLF3rwrNiAj8FMw"
