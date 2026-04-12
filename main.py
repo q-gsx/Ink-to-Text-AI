@@ -24,7 +24,7 @@ from bidi.algorithm import get_display
 # ============================================================
 st.set_page_config(
     page_title="Ink to text AI — Handwriting & Print OCR",
-    page_icon="assets/icon.png" if os.path.exists("assets/icon.png") else None,
+    page_icon="📝", # يمكنك تغيير هذه الإيموجي أو وضع مسار لصورة من جهازك مثل "assets/icon.png"
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -130,7 +130,8 @@ def detect_content_type(text: str) -> str:
 
 def file_hash(file_obj) -> str:
     file_obj.seek(0)
-    h = hashlib.md5(file_obj.read()).hexdigest()[:8]
+    h_full = hashlib.md5(file_obj.read()).hexdigest()
+    h = h_full[0:8]
     file_obj.seek(0)
     return h
 
@@ -299,7 +300,7 @@ class ArabicPDF(FPDF):
     BORDER   = (226, 232, 240)
 
     def __init__(self, font_path: str | None = None):
-        super().__init__(orientation='P', unit='mm', format='A4')
+        super().__init__('P', 'mm', 'A4')
         self.set_auto_page_break(auto=True, margin=20)
         self.set_margins(left=20, top=25, right=20)
         self._font_path = font_path
@@ -307,9 +308,10 @@ class ArabicPDF(FPDF):
         self._add_arabic_font()
 
     def _add_arabic_font(self):
-        if self._font_path and os.path.exists(self._font_path):
+        fp = self._font_path
+        if fp is not None and os.path.exists(fp):
             try:
-                self.add_font(self.FONT_REGULAR, '', self._font_path)
+                self.add_font(self.FONT_REGULAR, '', fp)
                 self._font_loaded = True
             except Exception:
                 self._font_loaded = False
@@ -523,7 +525,7 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
     url = f"{GEMINI_URL}?key={API_KEY}"
     t0  = time.time()
     res = requests.post(url, json=payload, timeout=60)
-    elapsed = round(time.time() - t0, 2)
+    elapsed = float(f"{time.time() - t0:.2f}")
     if res.status_code == 200:
         text = res.json()['candidates'][0]['content']['parts'][0]['text']
         return text, elapsed
