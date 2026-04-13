@@ -162,10 +162,12 @@ def shape_arabic(text: str) -> str:
 # ============================================================
 # 6. EXPORT FUNCTIONS
 # ============================================================
+@st.cache_data(show_spinner=False)
 def create_txt(content: str) -> bytes:
     clean = strip_tags(clean_html(content))
     return clean.encode("utf-8")
 
+@st.cache_data(show_spinner=False)
 def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
     html = f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -201,6 +203,7 @@ def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
 </html>"""
     return html.encode("utf-8")
 
+@st.cache_data(show_spinner=False)
 def create_word_doc(content: str) -> bytes:
     doc = Document()
     for section in doc.sections:
@@ -398,16 +401,20 @@ def _extract_tables(html: str) -> list[dict]:
         tables_data.append({"headers": headers, "rows": rows})
     return tables_data
 
+@st.cache_data(show_spinner=False)
 def create_pdf(content: str) -> bytes | None:
     """
     Generate a professional Arabic-ready PDF from extracted content.
     """
+    import sys, io
+    old_stdout = sys.stdout
+    sys.stdout = io.StringIO()
     try:
         current_dir  = os.path.dirname(os.path.abspath(__file__))
         font_path    = os.path.join(current_dir, 'Arial.ttf')
 
         pdf = ArabicPDF(font_path=font_path)
-        pdf.add_page()
+        _ = pdf.add_page()
 
         cleaned = clean_html(content)
         pattern = re.compile(
@@ -424,25 +431,29 @@ def create_pdf(content: str) -> bytes | None:
             if heading_match:
                 heading_text = strip_tags(heading_match.group(1)).strip()
                 if heading_text:
-                    pdf.section_title(heading_text)
+                    _ = pdf.section_title(heading_text)
                 continue
             if re.match(r'<table', seg, re.IGNORECASE):
                 tables_data = _extract_tables(seg)
                 for t in tables_data:
                     if t["headers"] or t["rows"]:
-                        pdf.render_table(t["headers"], t["rows"])
+                        _ = pdf.render_table(t["headers"], t["rows"])
                 continue
             plain = strip_tags(seg)
             for line in plain.split('\n'):
                 line = line.strip()
                 if line:
-                    pdf.body_line(line)
+                    _ = pdf.body_line(line)
         out = pdf.output(dest='S')
         return out.encode('latin-1') if isinstance(out, str) else bytes(out)
     except Exception as e:
+        sys.stdout = old_stdout
         st.warning(f"خطأ في إنشاء PDF: {e}")
         return None
+    finally:
+        sys.stdout = old_stdout
 
+@st.cache_data(show_spinner=False)
 def create_json_export(content: str, meta: dict) -> bytes:
     data = {
         "tool":       "Ink to text AI",
@@ -456,6 +467,7 @@ def create_json_export(content: str, meta: dict) -> bytes:
     }
     return json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
 
+@st.cache_data(show_spinner=False)
 def create_csv_from_tables(content: str) -> bytes | None:
     tables = re.findall(r'<table>(.*?)</table>', content, re.DOTALL | re.IGNORECASE)
     if not tables:
@@ -475,7 +487,7 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
         "contents": [{
             "parts": [
                 {"text": prompt},
-                {"inline_data": {"mime_type": "image/jpeg", "data": img_b64}}
+                {"inlineData": {"mimeType": "image/jpeg", "data": img_b64}}
             ]
         }],
         "generationConfig": {
@@ -485,15 +497,10 @@ def call_gemini(img_b64: str, prompt: str, temperature: float = 0.0) -> tuple[st
         }
     }
     
-    # قائمة بجميع الموديلات الممكنة لتفادي حظر موديل معين
     models_to_try = [
         "gemini-2.5-flash",
         "gemini-2.0-flash",
-        "gemini-1.5-flash-latest",
-        "gemini-1.5-flash",
-        "gemini-flash-latest",
-        "gemini-1.5-pro",
-        "gemini-pro"
+        "gemini-flash-latest"
     ]
     
     last_error = ""
@@ -574,32 +581,23 @@ extra_instr = ""
 max_img_dim = 2048
 
 # ============================================================
-# 9. HEADER + THEME TOGGLE
+# 9. NAVIGATION & THEME TOGGLE
 # ============================================================
-_hcol1, _hcol2 = st.columns([5, 1])
-with _hcol1:
-    st.markdown("""
-<div class="simple-header">
-    <h1>Ink to text AI</h1>
-    <p>Extract text, tables, and handwriting from images. Supports Arabic &amp; 40+ languages.</p>
-</div>
-""", unsafe_allow_html=True)
-with _hcol2:
-    _is_dark = st.session_state.get("dark_mode", False)
-    
-    st.markdown("<div style='margin-top:0.75rem;'></div>", unsafe_allow_html=True)
-    new_dark_state = st.toggle(
-        "Dark Theme",
-        value=_is_dark,
-        key="theme_toggle",
-        help="Switch between Light and Dark interface"
-    )
-    if new_dark_state != _is_dark:
-        st.session_state.dark_mode = new_dark_state
-        st.rerun()
+# 9. THEME TOGGLE (Top Right)
+# ============================================================
+st.markdown('<div id="theme-btn-anchor"></div>', unsafe_allow_html=True)
+_is_dark = st.session_state.get("dark_mode", False)
+if _is_dark:
+    theme_btn = st.button("☀️ Light Mode", key="theme_toggle")
+else:
+    theme_btn = st.button("🌙 Dark Mode", key="theme_toggle")
+
+if theme_btn:
+    st.session_state.dark_mode = not _is_dark
+    st.rerun()
 
 # ============================================================
-# 10. MAIN TABS
+# 10. MAIN NAVIGATION TABS
 # ============================================================
 tab_single, tab_batch, tab_history, tab_guide = st.tabs([
     "Single Document",
@@ -612,13 +610,20 @@ tab_single, tab_batch, tab_history, tab_guide = st.tabs([
 # TAB 1: SINGLE DOCUMENT
 # ============================================================
 with tab_single:
-    col_left, col_gap, col_right = st.columns([1, 0.05, 1.25])
+    st.markdown("""
+<div class="simple-header">
+    <h1>Ink to text AI</h1>
+    <p>Convert handwritten notes to digital text. AI-powered recognition for messy handwriting.</p>
+</div>
+<div style="display:flex;justify-content:center;gap:1.5rem;font-size:0.95rem;font-weight:600;color:var(--text2);margin-bottom:2.5rem;margin-top:-1.5rem;">
+    <span><i class="fa-solid fa-check" style="color:var(--success);"></i> Free to use</span>
+    <span><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> ~10 seconds</span>
+    <span><i class="fa-solid fa-copy" style="color:var(--accent);"></i> Text / Copy to clipboard</span>
+</div>
+""", unsafe_allow_html=True)
 
-    with col_left:
-        st.markdown(
-            '<div class="card-title"><i class="fa-solid fa-upload"></i> Upload Document</div>',
-            unsafe_allow_html=True
-        )
+    _u1, _u2, _u3 = st.columns([1, 8, 1])
+    with _u2:
         uploaded_file = st.file_uploader(
             "Drop your image here",
             type=SUPPORTED_FORMATS,
@@ -656,199 +661,201 @@ with tab_single:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            if st.button("Extract Text Now", key="extract_btn"):
+            _b1, _b2, _b3 = st.columns([1,2,1])
+            with _b2:
+                extract_clicked = st.button("Extract Text Now", key="extract_btn", use_container_width=True)
+
+            if extract_clicked:
                 prompt = build_prompt(extraction_mode, extra_instr, output_lang)
 
-                with st.status("AI is processing your document...", expanded=True) as status:
-                    st.write("✨ Preparing and formatting image...")
+                progress_placeholder = st.empty()
+                progress_placeholder.markdown("""
+                <div class="processing-container">
+                    <div class="processing-spinner"></div>
+                    <div class="processing-text">AI is deep-scanning your document...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                try:
+                    img_b64 = image_to_b64(img_proc)
+                    result, elapsed = call_gemini(img_b64, prompt, temperature=api_temp)
                     
-                    try:
-                        img_b64 = image_to_b64(img_proc)
-                        st.write("🚀 Sending to Gemini Data Engine...")
+                    st.session_state.extracted_result   = result
+                    st.session_state.last_process_time  = elapsed
+                    st.session_state.total_processed   += 1
+                    st.session_state.total_chars       += count_chars(result)
 
-                        result, elapsed = call_gemini(img_b64, prompt, temperature=api_temp)
-                        st.write("📊 Parsing and structuring response...")
-                        
-                        st.session_state.extracted_result   = result
-                        st.session_state.last_process_time  = elapsed
-                        st.session_state.total_processed   += 1
-                        st.session_state.total_chars       += count_chars(result)
+                    st.session_state.processing_history.insert(0, {
+                        "filename":  uploaded_file.name,
+                        "timestamp": datetime.now().strftime("%H:%M:%S"),
+                        "mode":      extraction_mode,
+                        "words":     count_words(result),
+                        "chars":     count_chars(result),
+                        "lang":      detect_language(result),
+                        "time":      elapsed,
+                        "result":    result,
+                    })
 
-                        st.session_state.processing_history.insert(0, {
-                            "filename":  uploaded_file.name,
-                            "timestamp": datetime.now().strftime("%H:%M:%S"),
-                            "mode":      extraction_mode,
-                            "words":     count_words(result),
-                            "chars":     count_chars(result),
-                            "lang":      detect_language(result),
-                            "time":      elapsed,
-                            "result":    result,
-                        })
+                    progress_placeholder.empty()
+                    st.balloons()
+                    st.toast(f"Extraction Successful in {elapsed}s", icon="✅")
 
-                        status.update(label=f"Done in {elapsed}s! Extracted {count_words(result):,} words.", state="complete", expanded=False)
-                        st.balloons()
-                        
-                        st.success(
-                            f"Extraction Successful — "
-                            f"{count_words(result):,} words · {count_chars(result):,} chars"
-                        )
-
-                    except Exception as e:
-                        status.update(label="Extraction encountered an error", state="error", expanded=False)
-                        st.error(f"Extraction failed: {e}")
+                except Exception as e:
+                    progress_placeholder.empty()
+                    st.error(f"Extraction failed: {e}")
         else:
-            st.markdown("""
-            <div style="text-align:center;padding:3rem;border:1px dashed #cbd5e1;border-radius:1rem;color:#6b7280;">
-                <i class="fa-solid fa-folder-open" style="font-size:2rem;margin-bottom:0.5rem;display:block;color:#cbd5e1;"></i>
-                <div>No document uploaded yet</div>
-                <div style="font-size:0.75rem;">Supports PNG, JPG, JPEG, WEBP, BMP, TIFF</div>
-            </div>
-            """, unsafe_allow_html=True)
+            pass # We removed the Awaiting Upload box since the dropzone itself is obvious
 
-    with col_right:
+    # ============================================================
+    # EXTRACTED CONTENT (Full Width Below)
+    # ============================================================
+    st.markdown("<hr style='margin:3rem 0; border:var(--border);'>", unsafe_allow_html=True)
+    st.markdown(
+        '<div class="card-title" style="justify-content:center;font-size:1.8rem;margin-bottom:2rem;"><i class="fa-solid fa-file-export" style="color:var(--accent);"></i> Extracted Content</div>',
+        unsafe_allow_html=True
+    )
+
+    if st.session_state.extracted_result:
+        result  = st.session_state.extracted_result
+        display = clean_html(result)
+
+        r1, r2, r3, r4 = st.columns(4)
+        r1.metric("Words",    f"{count_words(result):,}")
+        r2.metric("Chars",    f"{count_chars(result):,}")
+        r3.metric("Language", detect_language(result))
+        r4.metric("Type",     detect_content_type(result))
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        view_tab, edit_tab = st.tabs(["Preview", "Edit & Notes"])
+
+        with view_tab:
+            preview_html = display.replace('\n', '<br>')
+            st.markdown(f'<div class="output-box">{preview_html}</div>', unsafe_allow_html=True)
+
+        with edit_tab:
+            edited = st.text_area(
+                "Edit extracted text:",
+                value=strip_tags(display),
+                height=300,
+                label_visibility="collapsed"
+            )
+            st.session_state.notes = st.text_area(
+                "Add notes:",
+                value=st.session_state.notes,
+                height=100,
+                placeholder="Your personal notes about this document..."
+            )
+            if st.button("Save Edits", key="save_edit"):
+                st.session_state.extracted_result = edited
+                st.success("Edits saved!")
+
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            '<div class="card-title"><i class="fa-solid fa-file-export"></i> Extracted Content</div>',
+            '<div style="font-size:0.7rem;font-weight:600;color:#6b7280;margin-bottom:0.5rem;">'
+            '<i class="fa-solid fa-box-archive" style="color:#4f46e5;margin-left:0.3rem;"></i>'
+            ' Export Options'
+            '</div>',
             unsafe_allow_html=True
         )
 
-        if st.session_state.extracted_result:
-            result  = st.session_state.extracted_result
-            display = clean_html(result)
+        export_ts = datetime.fromtimestamp(st.session_state.last_process_time).strftime('%Y%m%d_%H%M%S')
+        base_name = f"DocuVision_{export_ts}"
 
-            r1, r2, r3, r4 = st.columns(4)
-            r1.metric("Words",    f"{count_words(result):,}")
-            r2.metric("Chars",    f"{count_chars(result):,}")
-            r3.metric("Language", detect_language(result))
-            r4.metric("Type",     detect_content_type(result))
+        ec1, ec2, ec3 = st.columns(3)
+        ec4, ec5, ec6 = st.columns(3)
 
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            view_tab, edit_tab = st.tabs(["Preview", "Edit & Notes"])
-
-            with view_tab:
-                preview_html = display.replace('\n', '<br>')
-                st.markdown(f'<div class="output-box">{preview_html}</div>', unsafe_allow_html=True)
-
-            with edit_tab:
-                edited = st.text_area(
-                    "Edit extracted text:",
-                    value=strip_tags(display),
-                    height=300,
-                    label_visibility="collapsed"
-                )
-                st.session_state.notes = st.text_area(
-                    "Add notes:",
-                    value=st.session_state.notes,
-                    height=100,
-                    placeholder="Your personal notes about this document..."
-                )
-                if st.button("Save Edits", key="save_edit"):
-                    st.session_state.extracted_result = edited
-                    st.success("Edits saved!")
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.markdown(
-                '<div style="font-size:0.7rem;font-weight:600;color:#6b7280;margin-bottom:0.5rem;">'
-                '<i class="fa-solid fa-box-archive" style="color:#4f46e5;margin-left:0.3rem;"></i>'
-                ' Export Options'
-                '</div>',
-                unsafe_allow_html=True
+        with ec1:
+            st.download_button(
+                "📄 Word Document",
+                data=create_word_doc(result),
+                file_name=f"{base_name}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key=f"dl_word_{export_ts}"
             )
-
-            ec1, ec2, ec3 = st.columns(3)
-            ec4, ec5, ec6 = st.columns(3)
-
-            with ec1:
+        with ec2:
+            pdf_bytes = create_pdf(result)
+            if pdf_bytes:
                 st.download_button(
-                    "Word (.docx)",
-                    data=create_word_doc(result),
-                    file_name=f"DocuVision_{datetime.now().strftime('%Y%m%d_%H%M')}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    key="dl_word"
+                    "📕 PDF Document",
+                    data=pdf_bytes,
+                    file_name=f"{base_name}.pdf",
+                    mime="application/pdf",
+                    key=f"dl_pdf_{export_ts}"
                 )
-            with ec2:
-                pdf_bytes = create_pdf(result)
-                if pdf_bytes:
-                    st.download_button(
-                        "PDF (عربي)",
-                        data=pdf_bytes,
-                        file_name=f"DocuVision_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                        mime="application/pdf",
-                        key="dl_pdf"
-                    )
-                else:
-                    st.button("PDF (error)", disabled=True)
-            with ec3:
+            else:
+                st.button("📕 PDF (error)", disabled=True)
+        with ec3:
+            st.download_button(
+                "📝 Plain Text",
+                data=create_txt(result),
+                file_name=f"{base_name}.txt",
+                mime="text/plain",
+                key=f"dl_txt_{export_ts}"
+            )
+        with ec4:
+            st.download_button(
+                "🌐 HTML Page",
+                data=create_html_export(result),
+                file_name=f"{base_name}.html",
+                mime="text/html",
+                key=f"dl_html_{export_ts}"
+            )
+        with ec5:
+            st.download_button(
+                "⚙️ JSON Export",
+                data=create_json_export(result, st.session_state.current_image_meta),
+                file_name=f"{base_name}.json",
+                mime="application/json",
+                key=f"dl_json_{export_ts}"
+            )
+        with ec6:
+            csv_data = create_csv_from_tables(result)
+            if csv_data:
                 st.download_button(
-                    "Plain Text",
-                    data=create_txt(result),
-                    file_name=f"DocuVision_{datetime.now().strftime('%Y%m%d_%H%M')}.txt",
-                    mime="text/plain",
-                    key="dl_txt"
+                    "📊 CSV Tables",
+                    data=csv_data,
+                    file_name=f"{base_name}_tables.csv",
+                    mime="text/csv",
+                    key=f"dl_csv_{export_ts}"
                 )
-            with ec4:
-                st.download_button(
-                    "HTML",
-                    data=create_html_export(result),
-                    file_name=f"DocuVision_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                    mime="text/html",
-                    key="dl_html"
-                )
-            with ec5:
-                st.download_button(
-                    "JSON",
-                    data=create_json_export(result, st.session_state.current_image_meta),
-                    file_name=f"DocuVision_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
-                    mime="application/json",
-                    key="dl_json"
-                )
-            with ec6:
-                csv_data = create_csv_from_tables(result)
-                if csv_data:
-                    st.download_button(
-                        "CSV (Tables)",
-                        data=csv_data,
-                        file_name=f"DocuVision_tables_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                        mime="text/csv",
-                        key="dl_csv"
-                    )
-                else:
-                    st.button("CSV (No tables)", disabled=True)
+            else:
+                st.button("📊 CSV (No tables)", disabled=True)
 
-            with st.expander("Raw Output (for copy)", expanded=False):
-                st.code(strip_tags(display), language=None)
+        with st.expander("Raw Output (for copy)", expanded=False):
+            st.code(strip_tags(display), language=None)
 
-        else:
-            st.markdown("""
-            <div style="text-align:center;padding:4rem 2rem;border:1px solid #e5e7eb;border-radius:1rem;">
-                <i class="fa-solid fa-magnifying-glass"
-                   style="font-size:2.5rem;margin-bottom:0.5rem;display:block;color:#cbd5e1;"></i>
-                <div style="font-weight:500;">Awaiting Extraction</div>
-                <div style="font-size:0.8rem;color:#6b7280;">Upload an image and click Extract to see results here.</div>
+    else:
+        st.markdown("""
+        <div style="text-align:center;padding:4rem 2rem;border:1px solid #e5e7eb;border-radius:1rem;">
+            <i class="fa-solid fa-magnifying-glass"
+               style="font-size:2.5rem;margin-bottom:0.5rem;display:block;color:#cbd5e1;"></i>
+            <div style="font-weight:500;">Awaiting Extraction</div>
+            <div style="font-size:0.8rem;color:#6b7280;">Upload an image and click Extract to see results here.</div>
+        </div>
+        <div class="steps-row" style="margin-top:1.5rem">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div><i class="fa-solid fa-upload icon-blue"></i> Upload</div>
+                <div class="step-text">Drop your image</div>
             </div>
-            <div class="steps-row" style="margin-top:1.5rem">
-                <div class="step-item">
-                    <div class="step-num">1</div>
-                    <div><i class="fa-solid fa-upload icon-blue"></i> Upload</div>
-                    <div class="step-text">Drop your image</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">2</div>
-                    <div><i class="fa-solid fa-sliders icon-blue"></i> Configure</div>
-                    <div class="step-text">Choose mode &amp; options</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">3</div>
-                    <div><i class="fa-solid fa-robot icon-blue"></i> Extract</div>
-                    <div class="step-text">AI processes</div>
-                </div>
-                <div class="step-item">
-                    <div class="step-num">4</div>
-                    <div><i class="fa-solid fa-download icon-blue"></i> Export</div>
-                    <div class="step-text">Download in 6 formats</div>
-                </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div><i class="fa-solid fa-sliders icon-blue"></i> Configure</div>
+                <div class="step-text">Choose mode &amp; options</div>
             </div>
-            """, unsafe_allow_html=True)
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div><i class="fa-solid fa-robot icon-blue"></i> Extract</div>
+                <div class="step-text">AI processes</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <div><i class="fa-solid fa-download icon-blue"></i> Export</div>
+                <div class="step-text">Download in 6 formats</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # ============================================================
 # TAB 2: BATCH PROCESSING
@@ -1005,44 +1012,51 @@ with tab_history:
 
     if not st.session_state.processing_history:
         st.markdown(
-            "<div style='text-align:center;padding:3rem;border:1px solid #e5e7eb;border-radius:1rem;'>"
-            "<i class='fa-solid fa-inbox' style='font-size:2rem;color:#cbd5e1;display:block;margin-bottom:0.5rem;'></i>"
-            "No history yet. Process a document to see it here."
+            "<div style='text-align:center;padding:5rem 2rem;border:2px dashed var(--border2);border-radius:1.5rem;background:var(--bg2);'>"
+            "<i class='fa-solid fa-clock-rotate-left' style='font-size:3.5rem;color:var(--border2);display:block;margin-bottom:1rem;'></i>"
+            "<h3 style='margin:0 0 0.5rem 0;color:var(--text);font-size:1.3rem;font-weight:600;'>History is empty</h3>"
+            "<p style='color:var(--text3);font-size:0.95rem;margin:0;'>Process your first document, and it will be safely logged right here.</p>"
             "</div>",
             unsafe_allow_html=True
         )
     else:
+        st.markdown('<div class="history-search">', unsafe_allow_html=True)
         hist_search = st.text_input(
             "Search history by filename...",
-            placeholder="Type to filter...",
+            placeholder="🔍 Type a filename to filter...",
             label_visibility="collapsed"
         )
+        st.markdown('</div><br>', unsafe_allow_html=True)
+        
         filtered = (
             [h for h in st.session_state.processing_history if hist_search.lower() in h["filename"].lower()]
             if hist_search else st.session_state.processing_history
         )
 
         for i, h in enumerate(filtered):
-            with st.expander(f"{h['filename']} — {h['timestamp']} — {h['words']:,} words", expanded=(i == 0)):
+            expander_title = f"📄 {h['filename']} &nbsp;•&nbsp; 🕒 {h['timestamp']} &nbsp;•&nbsp; 📝 {h['words']:,} words"
+            with st.expander(expander_title, expanded=(i == 0)):
                 hc1, hc2, hc3, hc4 = st.columns(4)
-                hc1.metric("Words", h["words"])
-                hc2.metric("Chars", h["chars"])
+                hc1.metric("Words", f"{h['words']:,}")
+                hc2.metric("Chars", f"{h['chars']:,}")
                 hc3.metric("Language", h["lang"])
                 hc4.metric("Speed", f"{h['time']}s")
+                
                 hist_html = clean_html(h["result"]).replace('\n', '<br>')
-                st.markdown(f'<div class="output-box">{hist_html}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="output-box" style="margin-top:1rem;margin-bottom:1.5rem;">{hist_html}</div>', unsafe_allow_html=True)
 
-                hd1, hd2 = st.columns(2)
+                st.markdown('<div style="font-size:0.8rem;color:var(--text3);margin-bottom:0.8rem;font-weight:600;">EXPORT RECORD</div>', unsafe_allow_html=True)
+                hd1, hd2, hd3, hd4 = st.columns([1, 1, 1, 1])
                 with hd1:
                     st.download_button(
-                        "Word",
+                        "📄 Word Doc",
                         data=create_word_doc(h["result"]),
                         file_name=f"{os.path.splitext(h['filename'])[0]}.docx",
                         key=f"hist_word_{i}"
                     )
                 with hd2:
                     st.download_button(
-                        "Text",
+                        "📝 Plain Text",
                         data=create_txt(h["result"]),
                         file_name=f"{os.path.splitext(h['filename'])[0]}.txt",
                         key=f"hist_txt_{i}"
