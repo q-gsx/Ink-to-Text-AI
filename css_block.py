@@ -37,7 +37,7 @@ html,body,[class*="css"],.stApp {
   color:var(--text) !important;
 }
 #MainMenu,footer,header { visibility:hidden !important; }
-.block-container { padding:2rem 2rem 3rem !important; max-width:1280px !important; margin:0 auto !important; }
+.block-container { padding:2rem 2rem 3rem !important; max-width:900px !important; margin:0 auto !important; position: relative !important; }
 h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:var(--text) !important; }
 
 /* SIDEBAR */
@@ -58,35 +58,171 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 .card-title i { color:var(--accent); font-size:1.1rem; }
 
 /* UPLOAD ZONE */
-.stFileUploader { margin-bottom:0.5rem; }
-.stFileUploader>div { border:none !important; }
+.stFileUploader { margin-bottom: 0.5rem; text-align: center; }
+.stFileUploader>div { border: none !important; }
 [data-testid="stFileUploaderDropzone"] {
-  background:linear-gradient(135deg,var(--accent-light) 0%,#f0f9ff 100%) !important;
-  border:2.5px dashed #a5b4fc !important;
-  border-radius:1.5rem !important;
-  padding:3.5rem 2rem !important;
-  transition:all 0.3s ease !important;
-  min-height:220px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  cursor:pointer !important;
+  background: var(--bg2) !important;
+  border: 2px dashed #a5b4fc !important;
+  border-radius: 1.5rem !important;
+  padding: 3rem 1rem !important;
+  transition: all 0.3s ease !important;
+  min-height: 250px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  position: relative !important;
 }
 [data-testid="stFileUploaderDropzone"]:hover {
-  border-color:var(--accent) !important;
-  background:linear-gradient(135deg,#e0e7ff 0%,#dbeafe 100%) !important;
-  box-shadow:var(--shadow-md) !important;
-  transform:translateY(-3px) !important;
+  border-color: var(--accent) !important;
+  background: var(--bg3) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-2px) !important;
 }
-[data-testid="stFileUploaderDropzone"] * { color: var(--text2) !important; font-size:0.9rem !important;}
-[data-testid="stFileUploaderDropzone"] button { background: var(--accent) !important; color: white !important; font-weight:600 !important; border:none !important; border-radius:0.75rem !important; padding:0.6rem 1.25rem !important; box-shadow:var(--shadow-sm) !important; transition:all 0.2s ease !important; margin-right:1rem !important;}
-[data-testid="stFileUploaderDropzone"] button:hover { background: var(--accent2) !important; transform:translateY(-1px) !important; box-shadow:var(--shadow-md) !important;}
+
+/* Hide specific Streamlit instructional text nodes but KEEP the button container */
+[data-testid="stFileUploaderDropzone"] > div > div > span,
+[data-testid="stFileUploaderDropzone"] > div > div > small,
+[data-testid="stFileUploaderDropzone"] svg {
+    display: none !important;
+}
+
+/* Ensure the button wrapper stays visible and centered */
+[data-testid="stFileUploaderDropzone"] > div { width: 100%; display: flex; justify-content: center; }
+
+/* Morph the actual browse native button into the 'Upload' button from the mockup */
+[data-testid="stFileUploaderInstructions"] button {
+    background: var(--accent) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.6rem 2rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin: 1.5rem auto !important;
+    width: auto !important;
+}
+[data-testid="stFileUploaderInstructions"] button span { display: none !important; }
+[data-testid="stFileUploaderInstructions"] button::before {
+    content: '↑ Upload';
+    color: white !important;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+[data-testid="stFileUploaderInstructions"] button:hover { background: var(--accent2) !important; transform: translateY(-2px) !important; box-shadow: var(--shadow-md) !important; }
+
+/* PREMIUM UPLOADED FILE COMPONENT AND X BUTTON FIX */
+[data-testid="stUploadedFile"] {
+    background: var(--bg2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1rem !important;
+    padding: 1rem 1.5rem !important;
+    margin-top: 1rem !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+[data-testid="stUploadedFile"] button {
+    background: transparent !important;
+    padding: 0.5rem !important;
+    width: auto !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    border: none !important;
+}
+[data-testid="stUploadedFile"] button::before { display: none !important; }
+[data-testid="stUploadedFile"] button span { display: inline-flex !important; }
+[data-testid="stUploadedFile"] button svg { fill: var(--error) !important; stroke: var(--error) !important; width: 1.2rem; height: 1.2rem; }
+[data-testid="stUploadedFile"] button:hover { transform: scale(1.1) !important; background: #fee2e2 !important; box-shadow: none !important; }
+
+/* THEME TOGGLE FIX (Float on Top Right) */
+.element-container:has(#theme-btn-anchor) { display: none !important; }
+.element-container:has(#theme-btn-anchor) + .element-container {
+    position: absolute !important;
+    top: 1.5rem;
+    right: 0;
+    z-index: 1000;
+    width: auto !important;
+}
+.element-container:has(#theme-btn-anchor) + .element-container button {
+    background: var(--bg2) !important;
+    border: 1px solid var(--border2) !important;
+    border-radius: 2rem !important;
+    padding: 0.4rem 1.2rem !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: var(--text) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    backdrop-filter: blur(10px);
+}
+.element-container:has(#theme-btn-anchor) + .element-container button:hover {
+    background: var(--bg2) !important;
+    border-color: var(--accent) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* The Header Texts injected BEFORE the button */
+[data-testid="stFileUploaderDropzone"]::before {
+    content: '✍️\\A Upload your documents';
+    white-space: pre-wrap;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.5;
+    display: block;
+}
+
+/* The Subtitle Texts injected AFTER the button */
+[data-testid="stFileUploaderDropzone"]::after {
+    content: 'Drag & drop or click anywhere to browse\\A\\A Supports: JPG, JPEG, PNG, WEBP';
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    color: var(--text3);
+    font-weight: 500;
+    line-height: 1.8;
+    text-align: center;
+    display: block;
+}
 
 /* BUTTONS */
 .stButton>button { width:100%; background:var(--accent) !important; color:white !important; border:none !important; border-radius:0.75rem !important; padding:0.6rem 1.2rem !important; font-weight:600 !important; font-size:0.9rem !important; transition:all 0.2s ease !important; box-shadow:var(--shadow-sm) !important; }
 .stButton>button:hover { background:var(--accent2) !important; transform:translateY(-2px) !important; box-shadow:var(--shadow-md) !important;}
-.stDownloadButton>button { background:var(--bg2) !important; color:var(--text) !important; border:1px solid var(--border) !important; box-shadow:var(--shadow-sm) !important; }
-.stDownloadButton>button:hover { background:var(--bg3) !important; border-color:var(--border2) !important; }
+
+/* PREMIUM EXPORT CARDS (Download Buttons) */
+.stDownloadButton>button { 
+    width: 100% !important;
+    background: linear-gradient(145deg, var(--bg2), var(--bg3)) !important;
+    color: var(--text) !important; 
+    border: 1px solid var(--border2) !important; 
+    border-radius: 0.85rem !important; 
+    padding: 1rem 1.25rem !important; 
+    font-weight: 600 !important; 
+    font-size: 0.95rem !important; 
+    height: auto !important; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.05) !important; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+}
+.stDownloadButton>button:hover { 
+    background: var(--accent) !important; 
+    border-color: var(--accent-light) !important; 
+    color: white !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 0 15px var(--accent-light) !important;
+}
+.stButton>button:disabled, .stDownloadButton>button:disabled {
+    background: var(--bg3) !important;
+    color: var(--text3) !important;
+    border-color: var(--border) !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.6 !important;
+}
 
 /* INPUTS */
 .stSelectbox>div>div,.stMultiSelect>div>div { background-color:var(--bg2) !important; border:1px solid var(--border2) !important; border-radius:0.75rem !important; box-shadow:var(--shadow-sm); }
@@ -95,7 +231,13 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 .stRadio>div>label:hover { border-color:var(--accent); background:var(--accent-light); transform:translateY(-1px); }
 .stSlider>div>div>div { background:var(--accent) !important; }
 
-/* PROGRESS */
+/* PROGRESS & PROCESSING */
+.processing-container { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem; background:var(--bg2); border:1px solid var(--border); border-radius:1rem; margin:2rem 0; box-shadow:var(--shadow-sm); }
+.processing-spinner { width:50px; height:50px; border:4px solid var(--border); border-top:4px solid var(--accent); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:1.5rem; }
+@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+.processing-text { font-size:1.1rem; font-weight:600; color:var(--text); animation:pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0% { opacity:1; } 50% { opacity:0.6; } 100% { opacity:1; } }
+
 .stProgress>div>div { background:var(--accent) !important; border-radius:100px; }
 .stSpinner>div { border-top-color:var(--accent) !important; }
 
@@ -112,15 +254,40 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 [data-testid="stMetricValue"] { color:var(--accent) !important; font-weight:700 !important; font-size:2rem !important; }
 
 /* OUTPUT BOX */
-.output-box { direction:rtl; background:var(--output-bg); border:1px solid var(--border); border-radius:1rem; padding:1.75rem; font-size:0.95rem; line-height:1.9; color:var(--text); max-height:600px; overflow-y:auto; font-family:'Segoe UI',Tahoma,'Noto Sans Arabic',Arial,sans-serif; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05); }
+.output-box { direction:rtl; white-space:pre-wrap; background:var(--output-bg); border:1px solid var(--border); border-radius:1rem; padding:1.75rem; font-size:0.95rem; line-height:1.9; color:var(--text); max-height:600px; overflow-y:auto; font-family:'Segoe UI',Tahoma,'Noto Sans Arabic',Arial,sans-serif; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05); }
 .output-box table { width:100%; border-collapse:collapse; margin:1.2rem 0; font-size:0.9rem; }
 .output-box th { background:var(--bg3); padding:0.75rem 1rem; text-align:right; font-weight:700; border:1px solid var(--border); color:var(--text); }
 .output-box td { padding:0.75rem 1rem; border:1px solid var(--border); text-align:right; color:var(--text2); }
 
 /* TABS */
-.stTabs [data-baseweb="tab-list"] { gap:0.5rem; background:transparent; border-bottom:1px solid var(--border); }
-.stTabs [data-baseweb="tab"] { background:transparent !important; border-radius:0.75rem 0.75rem 0 0 !important; color:var(--text3) !important; font-weight:600 !important; font-size:0.9rem !important; padding:0.75rem 1.25rem !important; transition:all 0.2s; }
-.stTabs [aria-selected="true"] { background:var(--bg2) !important; color:var(--accent) !important; border-bottom:3px solid var(--accent) !important; box-shadow:0 -4px 6px -1px rgba(0,0,0,0.02); }
+.stTabs [data-baseweb="tab-list"] { 
+    gap: 0.5rem; 
+    background: var(--bg2); 
+    border-bottom: none; 
+    justify-content: center; 
+    padding: 0.5rem; 
+    border-radius: 2rem; 
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
+    margin: 0 auto 2.5rem auto; 
+    width: fit-content; 
+    border: 1px solid var(--border); 
+}
+.stTabs [data-baseweb="tab"] { 
+    background: transparent !important; 
+    border-radius: 1.5rem !important; 
+    color: var(--text3) !important; 
+    font-weight: 600 !important; 
+    font-size: 0.95rem !important; 
+    padding: 0.6rem 1.5rem !important; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+    border: none !important; 
+}
+.stTabs [aria-selected="true"] { 
+    background: var(--accent) !important; 
+    color: white !important; 
+    border-bottom: none !important; 
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) !important; 
+}
 
 /* EXPANDER */
 [data-testid="stExpander"] details summary { background:var(--bg2) !important; border-radius:0.75rem; font-weight:600; color:var(--text) !important; border:1px solid var(--border) !important; padding:1rem !important; box-shadow:var(--shadow-sm); transition:all 0.2s ease;}
