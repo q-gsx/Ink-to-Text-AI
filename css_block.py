@@ -168,7 +168,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 
 /* The Header Texts injected BEFORE the button */
 [data-testid="stFileUploaderDropzone"]::before {
-    content: '✍️\\A Upload your documents';
+    content: '✍️\\A Upload your document';
     white-space: pre-wrap;
     font-size: 1.6rem;
     font-weight: 800;
