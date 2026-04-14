@@ -143,31 +143,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     z-index: 1000;
     width: auto !important;
 }
-@media (max-width: 768px) {
-    .block-container {
-        padding: 1rem 0.5rem 3rem !important;
-    }
-    .element-container:has(#theme-btn-anchor) + .element-container {
-        position: relative !important;
-        top: 0 !important;
-        right: 0 !important;
-        display: flex !important;
-        justify-content: center !important;
-        margin-bottom: 2rem !important;
-        width: 100% !important;
-    }
-    .element-container:has(#theme-btn-anchor) + .element-container button {
-        margin: 0 auto !important;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        justify-content: flex-start !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        width: 100% !important;
-        border-radius: 1.5rem !important;
-        padding: 0.5rem !important;
-    }
-}
+
 .element-container:has(#theme-btn-anchor) + .element-container button {
     background: transparent !important;
     background-color: transparent !important;
@@ -367,6 +343,31 @@ hr { border-color:var(--border); margin:2rem 0; }
 .theme-toggle-wrap { display:flex; justify-content:flex-end; margin-bottom:1rem; }
 .theme-btn { display:inline-flex; align-items:center; gap:0.6rem; padding:0.5rem 1.2rem; border-radius:2rem; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm); }
 .theme-btn:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--accent); }
+
+@media (max-width: 768px) {
+    .block-container {
+        padding: 1rem 0.5rem 3rem !important;
+    }
+    .element-container:has(#theme-btn-anchor) + .element-container {
+        position: relative !important;
+        top: 0 !important;
+        right: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        margin-bottom: 2rem !important;
+        width: 100% !important;
+    }
+    .element-container:has(#theme-btn-anchor) + .element-container button {
+        margin: 0 auto !important;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        border-radius: 1.5rem !important;
+        padding: 0.5rem !important;
+    }
+}
 </style>
 """
 
