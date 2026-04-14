@@ -165,6 +165,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         -webkit-overflow-scrolling: touch;
         width: 100% !important;
         border-radius: 1.5rem !important;
+        padding: 0.5rem !important;
     }
 }
 .element-container:has(#theme-btn-anchor) + .element-container button {
