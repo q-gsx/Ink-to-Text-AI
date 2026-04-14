@@ -287,6 +287,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     padding: 0.6rem 1.5rem !important; 
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
     border: none !important; 
+    white-space: nowrap !important;
 }
 .stTabs [data-baseweb="tab"]:hover {
     background-color: rgba(128,128,128,0.1) !important;
