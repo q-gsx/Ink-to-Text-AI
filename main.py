@@ -1145,7 +1145,7 @@ st.markdown("""
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
     Clean OCR tool
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
-    Powered by Gemini 2.0 Flash
+    Powered by AI
     <br><span>&copy; 2026</span>
 </div>
 """, unsafe_allow_html=True)
