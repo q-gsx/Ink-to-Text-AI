@@ -618,7 +618,7 @@ with tab_single:
 <div style="display:flex;justify-content:center;gap:1.5rem;font-size:0.95rem;font-weight:600;color:var(--text2);margin-bottom:2.5rem;margin-top:-1.5rem;">
     <span><i class="fa-solid fa-check" style="color:var(--success);"></i> Free to use</span>
     <span><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> ~10 seconds</span>
-    <span><i class="fa-solid fa-copy" style="color:var(--accent);"></i> Text / Copy to clipboard</span>
+    <span><i class="fa-solid fa-copy" style="color:var(--accent);"></i> Export in seconds</span>
 </div>
 """, unsafe_allow_html=True)
 
