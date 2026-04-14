@@ -139,7 +139,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 .element-container:has(#theme-btn-anchor) + .element-container {
     position: absolute !important;
     top: 3.4rem; /* Adjusted up by 0.2rem to negate new padding */
-    right: 2.8rem; /* Adjusted right by 0.3rem to negate new padding */
+    right: 4.3rem; /* Recalculated against the new 3rem container padding to push it safely inside the pill */
     z-index: 1000;
     width: auto !important;
 }
