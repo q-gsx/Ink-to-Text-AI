@@ -1081,59 +1081,82 @@ with tab_history:
 # TAB 4: HOW TO USE
 # ============================================================
 with tab_guide:
-    st.markdown(
-        '<div class="card-title"><i class="fa-solid fa-book-open"></i> User Guide</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div style="text-align:center; margin-bottom: 2.5rem; margin-top: 1rem;">
+        <h2 style="font-weight:700; font-size:1.8rem; color:var(--text); margin-bottom:0.8rem;">How to Use Ink to Text AI</h2>
+        <p style="color:var(--text2); font-size:1rem; max-width:650px; margin:0 auto;">A comprehensive guide to digitizing handwritten notes and processing documents using AI-driven optical character recognition.</p>
+    </div>
+
+    <div class="steps-row">
+        <div class="step-item">
+            <div class="step-num">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            </div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">1. Upload Document</h4>
+            <div class="step-text" style="font-size:0.9rem;">Upload scanned documents or images containing handwriting. Supported formats include JPG, PNG, and WEBP.</div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">2. Configure Settings</h4>
+            <div class="step-text" style="font-size:0.9rem;">Select your extraction mode from the sidebar and apply any necessary language constraints or instructions.</div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">3. Process & Export</h4>
+            <div class="step-text" style="font-size:0.9rem;">Execute the extraction and download the structured output as an editable Word Document (.docx) or Plain Text file.</div>
+        </div>
+    </div>
+    <hr>
+    <div class="card-title" style="justify-content:center; margin-bottom:1.5rem; margin-top:1rem; font-size:1.1rem;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        System Settings & Developer Info
+    </div>
+    """, unsafe_allow_html=True)
 
     gc1, gc2 = st.columns(2)
     with gc1:
-        with st.expander("Quick Start", expanded=True):
-            st.markdown(
-                "1. **Upload** your image (PNG, JPG, WEBP, etc.)\n"
-                "2. **Choose mode** from the sidebar\n"
-                "3. **Enable enhancement** if needed\n"
-                "4. Click **Extract Text Now**\n"
-                "5. **Download** in your preferred format"
-            )
-        with st.expander("Extraction Modes"):
-            st.markdown(
-                "| Mode | Best For |\n"
-                "|------|----------|\n"
-                "| **Standard** | General documents, letters |\n"
-                "| **Enhanced** | Complex layouts with headings |\n"
-                "| **Tables Only** | Spreadsheets, invoices |\n"
-                "| **Extract + Summarize** | Long documents needing a brief overview |\n"
-                "| **Key-Value / Forms** | Forms, IDs, receipts |"
-            )
-        with st.expander("Image Enhancement"):
-            st.markdown(
-                "- **Contrast**: Makes text stand out\n"
-                "- **Sharpness**: Sharpens blurry text\n"
-                "- **Brightness**: Lighten dark scans\n"
-                "- **Denoise**: Removes speckles from old documents"
-            )
+        with st.expander("Extraction Modes", expanded=True):
+            st.markdown("""
+            Select the appropriate mode in the sidebar based on your document structure:
+            - **Standard Extraction**: General purpose text extraction for letters, notes, and paragraphs.
+            - **Enhanced Accuracy**: Recommended for messy handwriting or complex document layouts.
+            - **Tables / Spreadsheets**: Interprets grids and outputs data in structured Markdown tables.
+            - **Extract + Summarize**: Appends a highly condensed summary after the full text extraction.
+            - **Key-Value / Forms**: Extracts labeled form fields and ID data into a rigid two-column table.
+            """)
+        
+        with st.expander("Sidebar Settings & Controls"):
+            st.markdown("""
+            Active configuration options available in the project sidebar prior to processing:
+            - **Output Language**: By default, the AI auto-detects the document language. You can strictly force a target language (like Arabic, French, or English) to maintain consistency.
+            - **AI Accuracy Temperature**: Adjusts the creativity parameter from `0.0` to `1.0`. Keep it at 0.0 for literal, strict transcription formatting without AI "guessing" words.
+            - **Custom Instructions**: Inject a specific directive into the LLM pipeline. Useful for commanding the AI to "Ignore the handwritten watermark" or "Translate everything to English immediately".
+            """)
+            
     with gc2:
-        with st.expander("Export Formats"):
-            st.markdown(
-                "- **Word (.docx)** – Editable\n"
-                "- **PDF (عربي)** – Archiving with full Arabic RTL support\n"
-                "- **Plain Text** – Copy-paste\n"
-                "- **HTML** – Web embedding\n"
-                "- **JSON** – System integration\n"
-                "- **CSV** – Excel tables"
-            )
-        with st.expander("Language Support"):
-            st.markdown(
-                "Gemini 1.5 Flash supports Arabic (full RTL), English, French, "
-                "German, Spanish, Chinese, Japanese, Korean, and 30+ more."
-            )
-        with st.expander("Pro Tips"):
-            st.markdown(
-                "- For **handwriting**, use Enhanced mode with high Sharpness\n"
-                "- Use **Custom Instructions** to skip watermarks\n"
-                "- **AI Temperature 0** gives most accurate results"
-            )
+        with st.expander("About the Developer", expanded=True):
+            st.markdown("""
+            **Qays Hijjawi**
+            *Software Developer & BTEC IT Level 3 Student*
+            
+            Passionate about building highly functional, purposeful AI applications and modern web platforms. Specializing in Python, Streamlit, and Full-Stack web architecture.
+            
+            *"Lost in code, found in purpose ✨"*
+            """)
+            
+        with st.expander("Connect & Contributions"):
+            st.markdown("""
+            This project utilizes the Gemini 2.0 Flash engine combined with an advanced custom UI architecture built natively in Python.
+            
+            - **GitHub**: [github.com/q-gsx](https://github.com/q-gsx)
+            - **Project**: Ink to Text AI Architecture
+            
+            Follow my GitHub for more open-source web and AI innovations.
+            """, unsafe_allow_html=True)
 
 # ============================================================
 # 11. FOOTER
@@ -1145,7 +1168,7 @@ st.markdown("""
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
     Clean OCR tool
     <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
-    Powered by AI
+    Powered by Gemini 2.0 Flash
     <br><span>&copy; 2026</span>
 </div>
 """, unsafe_allow_html=True)
