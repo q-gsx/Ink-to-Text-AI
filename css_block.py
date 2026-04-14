@@ -37,12 +37,12 @@ html,body,[class*="css"],.stApp {
   color:var(--text) !important;
 }
 #MainMenu,footer,header { visibility:hidden !important; }
-.block-container { padding:2rem 2rem 3rem !important; max-width:900px !important; margin:0 auto !important; position: relative !important; }
+.block-container { padding:2rem 2rem 3rem !important; max-width:900px !important; margin:0 auto !important; position: relative !important; overflow-x: hidden !important; }
 h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:var(--text) !important; }
 
 /* SIDEBAR */
 [data-testid="stSidebar"] { background-color:var(--sidebar-bg) !important; border-right:1px solid var(--border) !important; padding:1.5rem 1rem !important; }
-[data-testid="stSidebar"] .block-container { padding:0 !important; }
+[data-testid="stSidebar"] .block-container { padding:0 !important; overflow-x: visible !important; }
 .sidebar-logo { text-align:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
 .sidebar-logo h2 { font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,var(--accent),#0ea5e9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.25rem; }
 .sidebar-logo p { font-size:0.8rem; color:var(--text3); font-weight:500; }
@@ -142,6 +142,28 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     right: 0;
     z-index: 1000;
     width: auto !important;
+}
+@media (max-width: 768px) {
+    .block-container {
+        padding: 1rem 0.5rem 3rem !important;
+    }
+    .element-container:has(#theme-btn-anchor) + .element-container {
+        position: relative !important;
+        top: 0 !important;
+        right: 0 !important;
+        display: flex !important;
+        justify-content: center !important;
+        margin-bottom: 2rem !important;
+        width: 100% !important;
+    }
+    .element-container:has(#theme-btn-anchor) + .element-container button {
+        margin: 0 auto !important;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 .element-container:has(#theme-btn-anchor) + .element-container button {
     background: var(--bg2) !important;
@@ -269,9 +291,12 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     border-radius: 2rem; 
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
     margin: 0 auto 2.5rem auto; 
-    width: fit-content; 
+    max-width: 100%; 
+    flex-wrap: nowrap;
+    overflow-x: auto;
     border: 1px solid var(--border); 
 }
+.stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 .stTabs [data-baseweb="tab"] { 
     background: transparent !important; 
     border-radius: 1.5rem !important; 
