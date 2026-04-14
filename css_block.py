@@ -37,12 +37,12 @@ html,body,[class*="css"],.stApp {
   color:var(--text) !important;
 }
 #MainMenu,footer,header { visibility:hidden !important; }
-.block-container { padding:2rem 2rem 3rem !important; max-width:900px !important; margin:0 auto !important; position: relative !important; overflow-x: hidden !important; }
+.block-container { padding:2rem 2rem 3rem !important; max-width:900px !important; margin:0 auto !important; position: relative !important; }
 h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:var(--text) !important; }
 
 /* SIDEBAR */
 [data-testid="stSidebar"] { background-color:var(--sidebar-bg) !important; border-right:1px solid var(--border) !important; padding:1.5rem 1rem !important; }
-[data-testid="stSidebar"] .block-container { padding:0 !important; overflow-x: visible !important; }
+[data-testid="stSidebar"] .block-container { padding:0 !important; }
 .sidebar-logo { text-align:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
 .sidebar-logo h2 { font-size:1.6rem; font-weight:800; background:linear-gradient(135deg,var(--accent),#0ea5e9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:0.25rem; }
 .sidebar-logo p { font-size:0.8rem; color:var(--text3); font-weight:500; }
@@ -138,8 +138,8 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 .element-container:has(#theme-btn-anchor) { display: none !important; }
 .element-container:has(#theme-btn-anchor) + .element-container {
     position: absolute !important;
-    top: 1.5rem;
-    right: 0;
+    top: 3.4rem; /* Adjusted up by 0.2rem to negate new padding */
+    right: 2.8rem; /* Adjusted right by 0.3rem to negate new padding */
     z-index: 1000;
     width: auto !important;
 }
@@ -163,28 +163,30 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         justify-content: flex-start !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
+        width: 100% !important;
+        border-radius: 1.5rem !important;
     }
 }
 .element-container:has(#theme-btn-anchor) + .element-container button {
-    background: var(--bg2) !important;
-    border: 1px solid var(--border2) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
     border-radius: 2rem !important;
-    padding: 0.4rem 1.2rem !important;
-    font-size: 1rem !important;
+    padding: 0.6rem 1.5rem !important;
+    font-size: 0.95rem !important;
     font-weight: 600 !important;
-    box-shadow: var(--shadow-sm) !important;
+    box-shadow: none !important;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    color: var(--text) !important;
+    color: var(--text3) !important;
     display: inline-flex !important;
     align-items: center !important;
     gap: 0.5rem !important;
-    backdrop-filter: blur(10px);
 }
 .element-container:has(#theme-btn-anchor) + .element-container button:hover {
-    background: var(--bg2) !important;
-    border-color: var(--accent) !important;
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: var(--shadow-md) !important;
+    background-color: rgba(128,128,128,0.1) !important;
+    color: var(--text) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: none !important;
 }
 
 /* The Header Texts injected BEFORE the button */
@@ -286,20 +288,21 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     gap: 0.5rem; 
     background: var(--bg2); 
     border-bottom: none; 
-    justify-content: center; 
-    padding: 0.5rem; 
+    justify-content: center; /* Center the tabs */
+    padding: 0.5rem 10.5rem 0.5rem 0.5rem !important; /* Asymmetrical padding to visually center tabs between left edge and the absolute right button */
     border-radius: 2rem; 
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
     margin: 0 auto 2.5rem auto; 
-    max-width: 100%; 
+    width: 100%; /* Stretch full width */
+    max-width: 100%;
     flex-wrap: nowrap;
-    overflow-x: auto;
     border: 1px solid var(--border); 
 }
 .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { display: none; }
 .stTabs [data-baseweb="tab"] { 
     background: transparent !important; 
-    border-radius: 1.5rem !important; 
+    background-color: transparent !important;
+    border-radius: 2rem !important; 
     color: var(--text3) !important; 
     font-weight: 600 !important; 
     font-size: 0.95rem !important; 
@@ -307,10 +310,17 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
     border: none !important; 
 }
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: rgba(128,128,128,0.1) !important;
+    color: var(--text) !important;
+    transform: translateY(-2px) !important;
+}
 .stTabs [aria-selected="true"] { 
-    background: var(--accent) !important; 
+    background-color: var(--accent) !important; 
     color: white !important; 
     border-bottom: none !important; 
+    border-radius: 2rem !important;
+    transform: none !important; /* active doesn't bounce on hover */
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1) !important; 
 }
 
