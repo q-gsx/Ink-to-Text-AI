@@ -344,7 +344,7 @@ hr { border-color:var(--border); margin:2rem 0; }
 .theme-btn { display:inline-flex; align-items:center; gap:0.6rem; padding:0.5rem 1.2rem; border-radius:2rem; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow-sm); }
 .theme-btn:hover { box-shadow:var(--shadow-md); transform:translateY(-2px); border-color:var(--accent); }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .block-container {
         padding: 1rem 0.5rem 3rem !important;
     }
@@ -361,8 +361,10 @@ hr { border-color:var(--border); margin:2rem 0; }
         margin: 0 auto !important;
     }
     .stTabs [data-baseweb="tab-list"] {
-        justify-content: center !important;
-        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap !important;
         width: 100% !important;
         border-radius: 1.5rem !important;
         padding: 0.5rem !important;
