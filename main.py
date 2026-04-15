@@ -615,11 +615,6 @@ with tab_single:
     <h1>Ink to text AI</h1>
     <p>Convert handwritten notes to digital text. AI-powered recognition for messy handwriting.</p>
 </div>
-<div style="display:flex;justify-content:center;gap:1.5rem;font-size:0.95rem;font-weight:600;color:var(--text2);margin-bottom:2.5rem;margin-top:-1.5rem;">
-    <span><i class="fa-solid fa-check" style="color:var(--success);"></i> Free to use</span>
-    <span><i class="fa-solid fa-bolt" style="color:#f59e0b;"></i> ~10 seconds</span>
-    <span><i class="fa-solid fa-copy" style="color:var(--accent);"></i> Export in seconds</span>
-</div>
 """, unsafe_allow_html=True)
 
     _u1, _u2, _u3 = st.columns([1, 8, 1])
@@ -752,9 +747,9 @@ with tab_single:
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            '<div style="font-size:0.7rem;font-weight:600;color:#6b7280;margin-bottom:0.5rem;">'
-            '<i class="fa-solid fa-box-archive" style="color:#4f46e5;margin-left:0.3rem;"></i>'
-            ' Export Options'
+            '<div style="font-size:0.75rem;font-weight:600;color:var(--text3);margin-bottom:0.8rem;text-align:center;text-transform:uppercase;letter-spacing:0.06em;">'
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
+            'Export Options'
             '</div>',
             unsafe_allow_html=True
         )
@@ -762,68 +757,98 @@ with tab_single:
         export_ts = datetime.fromtimestamp(st.session_state.last_process_time).strftime('%Y%m%d_%H%M%S')
         base_name = f"DocuVision_{export_ts}"
 
-        ec1, ec2, ec3 = st.columns(3)
-        ec4, ec5, ec6 = st.columns(3)
+        # ── Export Cards: Direct HTML downloads (Zero Streamlit UI Artifacts) ──
+        word_data = create_word_doc(result)
+        word_b64  = base64.b64encode(word_data).decode()
+        pdf_data  = create_pdf(result)
+        pdf_b64   = base64.b64encode(pdf_data).decode() if pdf_data else None
 
-        with ec1:
-            st.download_button(
-                "📄 Word Document",
-                data=create_word_doc(result),
-                file_name=f"{base_name}.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                key=f"dl_word_{export_ts}"
-            )
-        with ec2:
-            pdf_bytes = create_pdf(result)
-            if pdf_bytes:
-                st.download_button(
-                    "📕 PDF Document",
-                    data=pdf_bytes,
-                    file_name=f"{base_name}.pdf",
-                    mime="application/pdf",
-                    key=f"dl_pdf_{export_ts}"
-                )
+        _ec1, _ec2, _ec3, _ec4 = st.columns([0.7, 2, 2, 0.7])
+        
+        with _ec2:
+            st.markdown(f"""
+            <a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{word_b64}" 
+               download="{base_name}.docx" class="export-link">
+                <div class="step-item">
+                    <div class="step-num">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <h4>Word Document</h4>
+                    <div class="step-text">Editable .docx format with full table support and RTL layout.</div>
+                </div>
+            </a>
+            """, unsafe_allow_html=True)
+
+        with _ec3:
+            if pdf_b64:
+                st.markdown(f"""
+                <a href="data:application/pdf;base64,{pdf_b64}" 
+                   download="{base_name}.pdf" class="export-link">
+                    <div class="step-item">
+                        <div class="step-num">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="M9 15h6"></path></svg>
+                        </div>
+                        <h4>PDF Document</h4>
+                        <div class="step-text">Professional Arabic-ready PDF with styled headings and tables.</div>
+                    </div>
+                </a>
+                """, unsafe_allow_html=True)
             else:
-                st.button("📕 PDF (error)", disabled=True)
-        with ec3:
-            st.download_button(
-                "📝 Plain Text",
-                data=create_txt(result),
-                file_name=f"{base_name}.txt",
-                mime="text/plain",
-                key=f"dl_txt_{export_ts}"
-            )
-        with ec4:
-            st.download_button(
-                "🌐 HTML Page",
-                data=create_html_export(result),
-                file_name=f"{base_name}.html",
-                mime="text/html",
-                key=f"dl_html_{export_ts}"
-            )
-        with ec5:
-            st.download_button(
-                "⚙️ JSON Export",
-                data=create_json_export(result, st.session_state.current_image_meta),
-                file_name=f"{base_name}.json",
-                mime="application/json",
-                key=f"dl_json_{export_ts}"
-            )
-        with ec6:
-            csv_data = create_csv_from_tables(result)
-            if csv_data:
-                st.download_button(
-                    "📊 CSV Tables",
-                    data=csv_data,
-                    file_name=f"{base_name}_tables.csv",
-                    mime="text/csv",
-                    key=f"dl_csv_{export_ts}"
-                )
-            else:
-                st.button("📊 CSV (No tables)", disabled=True)
+                st.markdown("""
+                <div class="step-item" style="opacity:0.5; filter:grayscale(1); cursor:not-allowed;">
+                    <div class="step-num" style="background:#94a3b8;">!</div>
+                    <h4>PDF Error</h4>
+                    <div class="step-text">Could not generate PDF for this document.</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+
+
+
+
+        # ── COMMENTED OUT: Additional export formats ──
+        # Kept here for future re-activation if needed.
+        #
+        # with ec3:
+        #     st.download_button(
+        #         "📝 Plain Text",
+        #         data=create_txt(result),
+        #         file_name=f"{base_name}.txt",
+        #         mime="text/plain",
+        #         key=f"dl_txt_{export_ts}"
+        #     )
+        # with ec4:
+        #     st.download_button(
+        #         "🌐 HTML Page",
+        #         data=create_html_export(result),
+        #         file_name=f"{base_name}.html",
+        #         mime="text/html",
+        #         key=f"dl_html_{export_ts}"
+        #     )
+        # with ec5:
+        #     st.download_button(
+        #         "⚙️ JSON Export",
+        #         data=create_json_export(result, st.session_state.current_image_meta),
+        #         file_name=f"{base_name}.json",
+        #         mime="application/json",
+        #         key=f"dl_json_{export_ts}"
+        #     )
+        # with ec6:
+        #     csv_data = create_csv_from_tables(result)
+        #     if csv_data:
+        #         st.download_button(
+        #             "📊 CSV Tables",
+        #             data=csv_data,
+        #             file_name=f"{base_name}_tables.csv",
+        #             mime="text/csv",
+        #             key=f"dl_csv_{export_ts}"
+        #         )
+        #     else:
+        #         st.button("📊 CSV (No tables)", disabled=True)
 
         with st.expander("Raw Output (for copy)", expanded=False):
             st.code(strip_tags(display), language=None)
+
 
     else:
         st.markdown("""
@@ -1165,10 +1190,6 @@ st.markdown("""
 <div class="app-footer">
     <i class="fa-solid fa-pen-nib"></i>
     <strong>Ink to text AI by Qays Hijjawi</strong>
-    <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
-    Clean OCR tool
-    <i class="fa-solid fa-circle" style="font-size:0.4rem;vertical-align:middle;margin:0 0.3rem;"></i>
-    Powered by Gemini 2.0 Flash
     <br><span>&copy; 2026</span>
 </div>
 """, unsafe_allow_html=True)
