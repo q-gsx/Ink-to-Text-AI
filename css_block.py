@@ -225,6 +225,94 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     opacity: 0.6 !important;
 }
 
+/* EXPORT CARD STYLE — Makes download buttons look like step-item cards */
+.export-cards .stDownloadButton>button,
+.export-cards .stButton>button {
+    width: 100% !important;
+    background: var(--bg2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 1.25rem !important;
+    padding: 2.5rem 1.5rem 1.8rem !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    color: var(--text) !important;
+    height: auto !important;
+    min-height: 180px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.3rem !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+}
+.export-cards .stDownloadButton>button:hover,
+.export-cards .stButton>button:hover:not(:disabled) {
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-3px) !important;
+    border-color: var(--border2) !important;
+    background: var(--bg2) !important;
+    color: var(--text) !important;
+}
+.export-cards .stDownloadButton>button::before,
+.export-cards .stButton>button::before {
+    content: '';
+    width: 2.8rem;
+    height: 2.8rem;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 4px 10px rgba(79,70,229,0.3);
+    flex-shrink: 0;
+}
+.export-cards .stDownloadButton>button::after,
+.export-cards .stButton>button::after {
+    content: attr(data-desc);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text2);
+    margin-top: 0.3rem;
+    line-height: 1.4;
+}
+/* Hide default SVG icon inside download buttons when in export-cards */
+.export-cards .stDownloadButton>button svg,
+.export-cards .stButton>button svg { display: none !important; }
+
+/* EXPORT LINK CARD — Minimalist approach: the entire card is a download link */
+.export-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    transition: all 0.3s ease !important;
+}
+
+.export-link:hover .step-item {
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-5px) !important;
+    border-color: var(--accent) !important;
+}
+
+.export-link .step-item {
+    margin-bottom: 0 !important;
+    cursor: pointer !important;
+}
+
+
+
+/* Ensure the outer container doesn't overflow */
+.export-cards {
+    padding-bottom: 1rem;
+}
+
+
+
 /* INPUTS */
 .stSelectbox>div>div,.stMultiSelect>div>div { background-color:var(--bg2) !important; border:1px solid var(--border2) !important; border-radius:0.75rem !important; box-shadow:var(--shadow-sm); }
 .stRadio>div { gap:0.6rem; }
