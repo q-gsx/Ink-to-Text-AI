@@ -35,10 +35,25 @@ st.set_page_config(
 from css_block import LIGHT_CSS, DARK_CSS
 
 def _inject_css():
+    sharing_image_url = "https://i.ibb.co/jmMNmRJ/banner.png"
+    
+    meta_tags = f"""
+        <head>
+            <meta property="og:image" content="{sharing_image_url}">
+            <meta property="og:image:type" content="image/jpeg">
+            <meta property="og:image:width" content="1200">
+            <meta property="og:image:height" content="630">
+            <meta name="twitter:card" content="summary_large_image">
+            <meta name="twitter:image" content="{sharing_image_url}">
+        </head>
+    """
+    
     is_dark = st.session_state.get("dark_mode", False)
-    payload  = LIGHT_CSS
+    payload = meta_tags + LIGHT_CSS # دمج وسوم الصورة مع الـ CSS
+    
     if is_dark:
         payload += DARK_CSS
+        
     if hasattr(st, "html"):
         st.html(payload)
     else:
@@ -46,6 +61,7 @@ def _inject_css():
 
 _inject_css()
 
+# ============================================================
 # 3. CONSTANTS & CONFIG
 # ============================================================
 try:
