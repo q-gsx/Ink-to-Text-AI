@@ -26,7 +26,12 @@ st.set_page_config(
     page_title="Ink to text AI — Handwriting & Print OCR",
     page_icon="https://i.ibb.co/V0TcJzmL/LOGO2.jpg",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': 'https://github.com/q-gsx',
+        'Report a bug': "https://github.com/q-gsx",
+        'About': "# Ink to text AI\nCreated by Qays Hijjawi"
+    }
 )
 
 # ============================================================
