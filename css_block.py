@@ -139,8 +139,9 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     /* ============================================================ */
     .element-container:has(#cmd-bar-anchor) { display: none !important; }
     
+    /* Robust Selectors for Cloud/Local parity */
     /* First Button (Language) */
-    .element-container:has(#cmd-bar-anchor) + .element-container {
+    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
         position: absolute !important;
         top: 4.7rem;
         right: 11.9rem;
@@ -148,7 +149,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         width: auto !important;
     }
     /* Second Button (Theme) */
-    .element-container:has(#cmd-bar-anchor) + .element-container + .element-container {
+    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
         position: absolute !important;
         top: 4.7rem;
         right: 3.8rem;
@@ -168,9 +169,9 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         .stTabs {
             margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
         }
-        .element-container:has(#cmd-bar-anchor) + .element-container {
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
             position: absolute !important;
-            top: 1.2rem !important; /* Positioned relative to top of page */
+            top: 1.2rem !important;
             left: 0 !important;
             right: 50% !important;
             display: flex !important;
@@ -179,7 +180,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
             width: 50% !important;
             z-index: 1001;
         }
-        .element-container:has(#cmd-bar-anchor) + .element-container + .element-container {
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
             position: absolute !important;
             top: 1.2rem !important;
             left: 50% !important;
