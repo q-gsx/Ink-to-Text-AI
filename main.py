@@ -57,13 +57,13 @@ def _inject_css():
         /* Fix Tabs */
         .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; }
         /* Fix Command Bar position for RTL */
-        .element-container:has(#cmd-bar-anchor) + .element-container { right: auto !important; left: 11.9rem !important; }
-        .element-container:has(#cmd-bar-anchor) + .element-container + .element-container { right: auto !important; left: 3.8rem !important; }
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) { right: auto !important; left: 11.9rem !important; }
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) { right: auto !important; left: 3.8rem !important; }
         @media (max-width: 768px) {
             [data-testid="stAppViewBlockContainer"] { padding-top: 4rem !important; }
             .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; } 
             .stTabs { margin-top: 1.8rem !important; }
-            .element-container:has(#cmd-bar-anchor) + .element-container { 
+            .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) { 
                 position: absolute !important; 
                 top: 1.2rem !important; 
                 left: 0 !important; 
@@ -73,7 +73,7 @@ def _inject_css():
                 padding-right: 0.8rem !important;
                 width: 50% !important;
             } 
-            .element-container:has(#cmd-bar-anchor) + .element-container + .element-container { 
+            .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) { 
                 position: absolute !important; 
                 top: 1.2rem !important; 
                 left: 50% !important; 
