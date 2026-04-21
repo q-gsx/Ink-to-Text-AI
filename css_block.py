@@ -173,7 +173,14 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
             left: 0 !important;
             width: 100% !important;
             justify-content: center !important;
-            gap: 0.8rem !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 0.5rem !important;
+        }
+        [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) > [data-testid="stColumn"] {
+            width: auto !important;
+            flex: none !important;
+            min-width: 0 !important;
         }
     }
 
