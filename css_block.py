@@ -105,7 +105,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 }
 [data-testid="stFileUploaderInstructions"] button span { display: none !important; }
 [data-testid="stFileUploaderInstructions"] button::before {
-    content: '↑ Upload';
+    content: var(--upload-btn);
     color: white !important;
     font-size: 0.95rem;
     font-weight: 700;
@@ -134,41 +134,107 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 [data-testid="stUploadedFile"] button svg { fill: var(--error) !important; stroke: var(--error) !important; width: 1.2rem; height: 1.2rem; }
 [data-testid="stUploadedFile"] button:hover { transform: scale(1.1) !important; background: #fee2e2 !important; box-shadow: none !important; }
 
-/* THEME TOGGLE FIX (Float on Top Right) */
-.element-container:has(#theme-btn-anchor) { display: none !important; }
-.element-container:has(#theme-btn-anchor) + .element-container {
-    position: absolute !important;
-    top: 3.4rem; /* Adjusted up by 0.2rem to negate new padding */
-    right: 4.3rem; /* Recalculated against the new 3rem container padding to push it safely inside the pill */
-    z-index: 1000;
-    width: auto !important;
-}
+    /* ============================================================
+    /* COMMAND BAR (Language & Theme Toggles)
+    /* ============================================================ */
+    .element-container:has(#cmd-bar-anchor) { display: none !important; }
+    
+    /* First Button (Language) */
+    .element-container:has(#cmd-bar-anchor) + .element-container {
+        position: absolute !important;
+        top: 4.7rem;
+        right: 11.9rem;
+        z-index: 1000;
+        width: auto !important;
+    }
+    /* Second Button (Theme) */
+    .element-container:has(#cmd-bar-anchor) + .element-container + .element-container {
+        position: absolute !important;
+        top: 4.7rem;
+        right: 3.8rem;
+        z-index: 1000;
+        width: auto !important;
+    }
 
-.element-container:has(#theme-btn-anchor) + .element-container button {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-    border-radius: 2rem !important;
-    padding: 0.6rem 1.5rem !important;
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    box-shadow: none !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    color: var(--text3) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-}
-.element-container:has(#theme-btn-anchor) + .element-container button:hover {
-    background-color: rgba(128,128,128,0.1) !important;
-    color: var(--text) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: none !important;
-}
+    /* MOBILE RESPONSIVENESS */
+    @media (max-width: 768px) {
+        /* Add space at the very top of the page */
+        [data-testid="stAppViewBlockContainer"] {
+            padding-top: 4rem !important;
+        }
+        .stTabs [data-baseweb="tab-list"] { 
+            padding: 0.5rem !important; 
+        }
+        .stTabs {
+            margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
+        }
+        .element-container:has(#cmd-bar-anchor) + .element-container {
+            position: absolute !important;
+            top: 1.2rem !important; /* Positioned relative to top of page */
+            left: 0 !important;
+            right: 50% !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            padding-right: 0.8rem !important;
+            width: 50% !important;
+            z-index: 1001;
+        }
+        .element-container:has(#cmd-bar-anchor) + .element-container + .element-container {
+            position: absolute !important;
+            top: 1.2rem !important;
+            left: 50% !important;
+            right: 0 !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            padding-left: 0.8rem !important;
+            width: 50% !important;
+            z-index: 1001;
+        }
+        /* Buttons: Ensure visibility in both themes */
+        .element-container:has(#cmd-bar-anchor) ~ .element-container button {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: var(--text1) !important; /* Primary text color for contrast */
+            padding: 0.4rem 0.5rem !important;
+            white-space: nowrap !important;
+        }
+    }
+    /* Desktop Button Styling (Global) */
+    .element-container:has(#cmd-bar-anchor) ~ .element-container button {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 0.3rem 1rem !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+        transition: all 0.3s ease !important;
+        color: var(--text1) !important; /* Fixed: High contrast in both themes */
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: auto !important;
+    }
+    .element-container:has(#cmd-bar-anchor) ~ .element-container button p {
+        font-size: 0.95rem !important;
+        margin: 0 !important;
+    }
+    .element-container:has(#cmd-bar-anchor) ~ .element-container button span {
+        font-size: 1.2rem !important;
+        margin-right: 0.5rem !important;
+    }
+        height: auto !important;
+    }
+    
+    .element-container:has(#cmd-bar-anchor) ~ .element-container button:hover {
+        background-color: rgba(128,128,128,0.1) !important;
+        color: var(--text) !important;
+    }
+    
 
 /* The Header Texts injected BEFORE the button */
 [data-testid="stFileUploaderDropzone"]::before {
-    content: '✍️\\A Upload your document';
+    content: var(--drop-title);
     white-space: pre-wrap;
     font-size: 1.6rem;
     font-weight: 800;
@@ -180,7 +246,7 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
 
 /* The Subtitle Texts injected AFTER the button */
 [data-testid="stFileUploaderDropzone"]::after {
-    content: 'Drag & drop or click anywhere to browse\\A\\A Supports: JPG, JPEG, PNG, WEBP';
+    content: var(--drop-subtitle);
     white-space: pre-wrap;
     font-size: 0.9rem;
     color: var(--text3);
@@ -354,8 +420,8 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     gap: 0.5rem; 
     background: var(--bg2); 
     border-bottom: none; 
-    justify-content: center; /* Center the tabs */
-    padding: 0.5rem 10.5rem 0.5rem 0.5rem !important; /* Asymmetrical padding to visually center tabs between left edge and the absolute right button */
+    justify-content: center !important; /* Center the tabs perfectly */
+    padding: 0.5rem !important; /* Fixed: Symmetrical padding to keep tabs centered */
     border-radius: 2rem; 
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); 
     margin: 0 auto 2.5rem auto; 
@@ -437,17 +503,18 @@ hr { border-color:var(--border); margin:2rem 0; }
     .block-container {
         padding: 1rem 0.5rem 3rem !important;
     }
-    .element-container:has(#theme-btn-anchor) + .element-container {
+    .element-container:has(#top-bar-anchor) + .element-container {
         position: relative !important;
         top: 0 !important;
         right: 0 !important;
+        left: 0 !important;
         display: flex !important;
         justify-content: center !important;
         margin-bottom: 2rem !important;
         width: 100% !important;
     }
-    .element-container:has(#theme-btn-anchor) + .element-container button {
-        margin: 0 auto !important;
+    .element-container:has(#top-bar-anchor) + .element-container button {
+        margin: 0 !important;
     }
     .stTabs [data-baseweb="tab-list"] {
         justify-content: flex-start !important;
