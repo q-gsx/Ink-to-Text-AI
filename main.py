@@ -55,24 +55,23 @@ def _inject_css():
         .stSlider > div { direction: ltr; }
         .stSlider label { display: block; text-align: right; }
         /* Fix Tabs */
-        .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important;        /* Fix Command Bar position for RTL */
-        [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
-            right: auto !important; 
-            left: 3.5rem !important; 
-            flex-direction: row-reverse !important;
+        .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; }
+        /* Fix Command Bar position for RTL */
+        [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) {
+            right: auto !important;
+            left: 3rem !important;
         }
         @media (max-width: 768px) {
             [data-testid="stAppViewBlockContainer"] { padding-top: 4rem !important; }
-            .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; } 
+            .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; }
             .stTabs { margin-top: 1.8rem !important; }
-            [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
-                top: 1.2rem !important; 
-                right: 0 !important; 
-                left: 0 !important; 
-                justify-content: center !important; 
-                width: 100% !important; 
-            } 
-        }   }
+            [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) {
+                right: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                justify-content: center !important;
+            }
+        }
         </style>
         """
         payload += rtl_css
@@ -645,30 +644,23 @@ max_img_dim = 2048
 # 9. FLOATING COMMAND CENTER (Theme & Language)
 # ============================================================
 _is_dark = st.session_state.get("dark_mode", False)
+theme_label = T[lang]["theme_light"] if _is_dark else T[lang]["theme_dark"]
+theme_icon = ":material/light_mode:" if _is_dark else ":material/dark_mode:"
 
-with st.container():
-    st.markdown(f"""
-    <div id="cmd-bar-wrapper"></div>
-    """, unsafe_allow_html=True)
-
+cmd_col1, cmd_col2 = st.columns(2)
+with cmd_col1:
+    st.markdown('<div id="cmd-bar-anchor"></div>', unsafe_allow_html=True)
     if lang == "en":
-        st.button(T[lang]["lang_toggle_ar"], key="lang_ar", icon=":material/language:")
+        if st.button(T[lang]["lang_toggle_ar"], key="lang_ar", icon=":material/language:"):
+            st.session_state.lang = "ar"
+            st.rerun()
     else:
-        st.button(T[lang]["lang_toggle_en"], key="lang_en", icon=":material/language:")
-
-    theme_label = T[lang]["theme_light"] if _is_dark else T[lang]["theme_dark"]
-    theme_icon = ":material/light_mode:" if _is_dark else ":material/dark_mode:"
-
+        if st.button(T[lang]["lang_toggle_en"], key="lang_en", icon=":material/language:"):
+            st.session_state.lang = "en"
+            st.rerun()
+with cmd_col2:
     if st.button(theme_label, key="theme_toggle", icon=theme_icon):
         st.session_state.dark_mode = not _is_dark
-        st.rerun()
-
-    # Manual rerun for language buttons since they aren't in 'if' blocks above for cleaner container logic
-    if st.session_state.get("lang_ar"):
-        st.session_state.lang = "ar"
-        st.rerun()
-    if st.session_state.get("lang_en"):
-        st.session_state.lang = "en"
         st.rerun()
 
 # ============================================================
