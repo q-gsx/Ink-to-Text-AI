@@ -56,7 +56,7 @@ def _inject_css():
         .stSlider label { display: block; text-align: right; }
         /* Fix Tabs */
         .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important;        /* Fix Command Bar position for RTL */
-        [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
+        [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) { 
             right: auto !important; 
             left: 3.5rem !important; 
             flex-direction: row-reverse !important;
@@ -65,12 +65,13 @@ def _inject_css():
             [data-testid="stAppViewBlockContainer"] { padding-top: 4rem !important; }
             .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; } 
             .stTabs { margin-top: 1.8rem !important; }
-            [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
+            [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) { 
                 top: 1.2rem !important; 
                 right: 0 !important; 
                 left: 0 !important; 
                 justify-content: center !important; 
                 width: 100% !important; 
+                flex-direction: row-reverse !important;
             } 
         }   }
         </style>
