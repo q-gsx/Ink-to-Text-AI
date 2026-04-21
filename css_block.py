@@ -137,29 +137,27 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     /* ============================================================
     /* COMMAND BAR (Language & Theme Toggles)
     /* ============================================================ */
-    .element-container:has(#cmd-bar-anchor) { display: none !important; }
-    
-    /* Robust Selectors for Cloud/Local parity */
-    /* First Button (Language) */
-    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
+    /* The buttons are inside st.columns → stHorizontalBlock.
+       We target the PARENT container, not individual siblings. */
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) {
         position: absolute !important;
-        top: 4.7rem;
-        right: 11.9rem;
+        top: 5.5rem;
+        right: 4.5rem;
         z-index: 1000;
         width: auto !important;
+        gap: 0rem !important;
+        background: transparent !important;
     }
-    /* Second Button (Theme) */
-    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
-        position: absolute !important;
-        top: 4.7rem;
-        right: 3.8rem;
-        z-index: 1000;
+    /* Hide the anchor element itself */
+    .element-container:has(#cmd-bar-anchor) { display: none !important; }
+    /* Make the columns auto-width */
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) > [data-testid="stColumn"] {
         width: auto !important;
+        flex: none !important;
     }
 
     /* MOBILE RESPONSIVENESS */
     @media (max-width: 768px) {
-        /* Add space at the very top of the page */
         [data-testid="stAppViewBlockContainer"] {
             padding-top: 4rem !important;
         }
@@ -167,42 +165,20 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
             padding: 0.5rem !important; 
         }
         .stTabs {
-            margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
+            margin-top: 1.8rem !important;
         }
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
-            position: absolute !important;
+        [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) {
             top: 1.2rem !important;
-            left: 0 !important;
-            right: 50% !important;
-            display: flex !important;
-            justify-content: flex-end !important;
-            padding-right: 0.8rem !important;
-            width: 50% !important;
-            z-index: 1001;
-        }
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
-            position: absolute !important;
-            top: 1.2rem !important;
-            left: 50% !important;
             right: 0 !important;
-            display: flex !important;
-            justify-content: flex-start !important;
-            padding-left: 0.8rem !important;
-            width: 50% !important;
-            z-index: 1001;
-        }
-        /* Buttons: Ensure visibility in both themes */
-        .element-container:has(#cmd-bar-anchor) ~ .element-container button {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            color: var(--text1) !important; /* Primary text color for contrast */
-            padding: 0.4rem 0.5rem !important;
-            white-space: nowrap !important;
+            left: 0 !important;
+            width: 100% !important;
+            justify-content: center !important;
+            gap: 0.8rem !important;
         }
     }
-    /* Desktop Button Styling (Global) */
-    .element-container:has(#cmd-bar-anchor) ~ .element-container button {
+
+    /* Button Styling */
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) button {
         background: transparent !important;
         border: none !important;
         border-radius: 20px !important;
@@ -210,24 +186,22 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         font-weight: 600 !important;
         box-shadow: none !important;
         transition: all 0.3s ease !important;
-        color: var(--text1) !important; /* Fixed: High contrast in both themes */
+        color: var(--text) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         width: auto !important;
+        height: auto !important;
     }
-    .element-container:has(#cmd-bar-anchor) ~ .element-container button p {
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) button p {
         font-size: 0.95rem !important;
         margin: 0 !important;
     }
-    .element-container:has(#cmd-bar-anchor) ~ .element-container button span {
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) button span {
         font-size: 1.2rem !important;
         margin-right: 0.5rem !important;
     }
-        height: auto !important;
-    }
-    
-    .element-container:has(#cmd-bar-anchor) ~ .element-container button:hover {
+    [data-testid="stHorizontalBlock"]:has(#cmd-bar-anchor) button:hover {
         background-color: rgba(128,128,128,0.1) !important;
         color: var(--text) !important;
     }
