@@ -137,30 +137,25 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     /* ============================================================
     /* COMMAND BAR (Language & Theme Toggles)
     /* ============================================================ */
-    /* Ultra-Robust Command Bar Positioning for Cloud */
-    /* Target any vertical block that contains our unique wrapper ID */
-    [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) {
+    .element-container:has(#cmd-bar-anchor) { display: none !important; }
+    
+    /* Robust Selectors for Cloud/Local parity */
+    /* First Button (Language) */
+    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
         position: absolute !important;
-        top: 4.55rem !important;
-        right: 3.5rem !important;
-        z-index: 9999 !important;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: flex-end !important;
-        gap: 0.5rem !important;
+        top: 4.7rem;
+        right: 11.9rem;
+        z-index: 1000;
         width: auto !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
     }
-    /* Ensure the internal containers don't break the row layout */
-    [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) > .element-container {
+    /* Second Button (Theme) */
+    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
+        position: absolute !important;
+        top: 4.7rem;
+        right: 3.8rem;
+        z-index: 1000;
         width: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
     }
-    /* Hide the markdown wrapper itself */
-    .element-container:has(#cmd-bar-wrapper) { display: none !important; }
 
     /* MOBILE RESPONSIVENESS */
     @media (max-width: 768px) {
@@ -174,18 +169,28 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         .stTabs {
             margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
         }
-        /* Center the entire command bar container on mobile */
-        [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) {
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
+            position: absolute !important;
             top: 1.2rem !important;
-            right: 0 !important;
             left: 0 !important;
-            justify-content: center !important;
-            width: 100% !important;
-            gap: 0.8rem !important;
-            flex-direction: row !important; /* Force row on mobile too */
+            right: 50% !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            padding-right: 0.8rem !important;
+            width: 50% !important;
+            z-index: 1001;
         }
-        /* Hide individual containers logic if any remnants exist */
-        .element-container:has(#cmd-bar-anchor) { display: none !important; }
+        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
+            position: absolute !important;
+            top: 1.2rem !important;
+            left: 50% !important;
+            right: 0 !important;
+            display: flex !important;
+            justify-content: flex-start !important;
+            padding-left: 0.8rem !important;
+            width: 50% !important;
+            z-index: 1001;
+        }
         /* Buttons: Ensure visibility in both themes */
         .element-container:has(#cmd-bar-anchor) ~ .element-container button {
             background: transparent !important;
