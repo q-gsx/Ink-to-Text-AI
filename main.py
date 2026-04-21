@@ -55,35 +55,24 @@ def _inject_css():
         .stSlider > div { direction: ltr; }
         .stSlider label { display: block; text-align: right; }
         /* Fix Tabs */
-        .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; }
-        /* Fix Command Bar position for RTL */
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) { right: auto !important; left: 11.9rem !important; }
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) { right: auto !important; left: 3.8rem !important; }
+        .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important;        /* Fix Command Bar position for RTL */
+        [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
+            right: auto !important; 
+            left: 3.5rem !important; 
+            flex-direction: row-reverse !important;
+        }
         @media (max-width: 768px) {
             [data-testid="stAppViewBlockContainer"] { padding-top: 4rem !important; }
             .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; } 
             .stTabs { margin-top: 1.8rem !important; }
-            .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) { 
-                position: absolute !important; 
+            [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) { 
                 top: 1.2rem !important; 
-                left: 0 !important; 
-                right: 50% !important; 
-                display: flex !important;
-                justify-content: flex-end !important;
-                padding-right: 0.8rem !important;
-                width: 50% !important;
-            } 
-            .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) { 
-                position: absolute !important; 
-                top: 1.2rem !important; 
-                left: 50% !important; 
                 right: 0 !important; 
-                display: flex !important;
-                justify-content: flex-start !important;
-                padding-left: 0.8rem !important;
-                width: 50% !important;
+                left: 0 !important; 
+                justify-content: center !important; 
+                width: 100% !important; 
             } 
-        }
+        }   }
         </style>
         """
         payload += rtl_css
@@ -657,25 +646,30 @@ max_img_dim = 2048
 # ============================================================
 _is_dark = st.session_state.get("dark_mode", False)
 
-st.markdown(f"""
-<div id="cmd-bar-anchor"></div>
-""", unsafe_allow_html=True)
+with st.container():
+    st.markdown(f"""
+    <div id="cmd-bar-wrapper"></div>
+    """, unsafe_allow_html=True)
 
-if lang == "en":
-    if st.button(T[lang]["lang_toggle_ar"], key="lang_ar", icon=":material/language:"):
+    if lang == "en":
+        st.button(T[lang]["lang_toggle_ar"], key="lang_ar", icon=":material/language:")
+    else:
+        st.button(T[lang]["lang_toggle_en"], key="lang_en", icon=":material/language:")
+
+    theme_label = T[lang]["theme_light"] if _is_dark else T[lang]["theme_dark"]
+    theme_icon = ":material/light_mode:" if _is_dark else ":material/dark_mode:"
+
+    if st.button(theme_label, key="theme_toggle", icon=theme_icon):
+        st.session_state.dark_mode = not _is_dark
+        st.rerun()
+
+    # Manual rerun for language buttons since they aren't in 'if' blocks above for cleaner container logic
+    if st.session_state.get("lang_ar"):
         st.session_state.lang = "ar"
         st.rerun()
-else:
-    if st.button(T[lang]["lang_toggle_en"], key="lang_en", icon=":material/language:"):
+    if st.session_state.get("lang_en"):
         st.session_state.lang = "en"
         st.rerun()
-
-theme_label = T[lang]["theme_light"] if _is_dark else T[lang]["theme_dark"]
-theme_icon = ":material/light_mode:" if _is_dark else ":material/dark_mode:"
-
-if st.button(theme_label, key="theme_toggle", icon=theme_icon):
-    st.session_state.dark_mode = not _is_dark
-    st.rerun()
 
 # ============================================================
 # 10. MAIN NAVIGATION TABS
