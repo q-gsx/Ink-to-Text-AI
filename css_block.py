@@ -137,20 +137,29 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     /* ============================================================
     /* COMMAND BAR (Language & Theme Toggles)
     /* ============================================================ */
-    /* Robust Command Bar Positioning (Single Container) */
-    [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) {
+    /* Ultra-Robust Command Bar Positioning for Cloud */
+    /* Target any vertical block that contains our unique wrapper ID */
+    [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) {
         position: absolute !important;
-        top: 4.55rem;
-        right: 3.5rem;
-        z-index: 1000;
+        top: 4.55rem !important;
+        right: 3.5rem !important;
+        z-index: 9999 !important;
         display: flex !important;
         flex-direction: row !important;
         justify-content: flex-end !important;
-        gap: 0.5rem;
+        gap: 0.5rem !important;
         width: auto !important;
         background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-    /* Hide the wrapper div itself */
+    /* Ensure the internal containers don't break the row layout */
+    [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) > .element-container {
+        width: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    /* Hide the markdown wrapper itself */
     .element-container:has(#cmd-bar-wrapper) { display: none !important; }
 
     /* MOBILE RESPONSIVENESS */
@@ -166,13 +175,14 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
             margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
         }
         /* Center the entire command bar container on mobile */
-        [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) {
+        [data-testid="stVerticalBlock"]:has(#cmd-bar-wrapper) {
             top: 1.2rem !important;
             right: 0 !important;
             left: 0 !important;
             justify-content: center !important;
             width: 100% !important;
             gap: 0.8rem !important;
+            flex-direction: row !important; /* Force row on mobile too */
         }
         /* Hide individual containers logic if any remnants exist */
         .element-container:has(#cmd-bar-anchor) { display: none !important; }
