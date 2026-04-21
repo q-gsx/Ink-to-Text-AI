@@ -26,39 +26,83 @@ st.set_page_config(
     page_title="Ink to text AI — Handwriting & Print OCR",
     page_icon="https://i.ibb.co/V0TcJzmL/LOGO2.jpg",
     layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={
-        'Get Help': 'https://github.com/q-gsx',
-        'Report a bug': "https://github.com/q-gsx",
-        'About': "# Ink to text AI\nCreated by Qays Hijjawi"
-    }
+    initial_sidebar_state="expanded"
 )
 
 # ============================================================
-# 2. CSS + FONT AWESOME INJECTION
+# 2. CSS + TRANSLATIONS INJECTION
 # ============================================================
 from css_block import LIGHT_CSS, DARK_CSS
+from translations import T
 
 def _inject_css():
-    sharing_image_url = "https://i.ibb.co/jmMNmRJ/banner.png"
-    
-    meta_tags = f"""
-        <head>
-            <meta property="og:image" content="{sharing_image_url}">
-            <meta property="og:image:type" content="image/jpeg">
-            <meta property="og:image:width" content="1200">
-            <meta property="og:image:height" content="630">
-            <meta name="twitter:card" content="summary_large_image">
-            <meta name="twitter:image" content="{sharing_image_url}">
-        </head>
-    """
-    
     is_dark = st.session_state.get("dark_mode", False)
-    payload = meta_tags + LIGHT_CSS # دمج وسوم الصورة مع الـ CSS
+    lang = st.session_state.get("lang", "en")
     
+    payload = LIGHT_CSS
     if is_dark:
         payload += DARK_CSS
         
+    # FontAwesome Injection
+    st.markdown('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">', unsafe_allow_html=True)
+    
+    # RTL Integration and Theme Strings
+    if lang == "ar":
+        rtl_css = """
+        <style>
+        .stApp, .block-container { direction: rtl !important; text-align: right !important; }
+        /* Fix slider for RTL */
+        .stSlider > div { direction: ltr; }
+        .stSlider label { display: block; text-align: right; }
+        /* Fix Tabs */
+        .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; }
+        /* Fix Command Bar position for RTL */
+        .element-container:has(#cmd-bar-anchor) + .element-container { right: auto !important; left: 11.9rem !important; }
+        .element-container:has(#cmd-bar-anchor) + .element-container + .element-container { right: auto !important; left: 3.8rem !important; }
+        @media (max-width: 768px) {
+            [data-testid="stAppViewBlockContainer"] { padding-top: 4rem !important; }
+            .stTabs [data-baseweb="tab-list"] { padding: 0.5rem !important; } 
+            .stTabs { margin-top: 1.8rem !important; }
+            .element-container:has(#cmd-bar-anchor) + .element-container { 
+                position: absolute !important; 
+                top: 1.2rem !important; 
+                left: 0 !important; 
+                right: 50% !important; 
+                display: flex !important;
+                justify-content: flex-end !important;
+                padding-right: 0.8rem !important;
+                width: 50% !important;
+            } 
+            .element-container:has(#cmd-bar-anchor) + .element-container + .element-container { 
+                position: absolute !important; 
+                top: 1.2rem !important; 
+                left: 50% !important; 
+                right: 0 !important; 
+                display: flex !important;
+                justify-content: flex-start !important;
+                padding-left: 0.8rem !important;
+                width: 50% !important;
+            } 
+        }
+        </style>
+        """
+        payload += rtl_css
+    
+    # Inject dynamic CSS variables for pseudo-elements
+    t_drop_title = T[lang]["drop_title"].replace("\n", "\\A ")
+    t_drop_sub = T[lang]["drop_subtitle"].replace("\n", "\\A ")
+    t_upload_btn = T[lang]["upload_btn"]
+    
+    payload += f"""
+    <style>
+    :root {{
+        --drop-title: '{t_drop_title}';
+        --drop-subtitle: '{t_drop_sub}';
+        --upload-btn: '{t_upload_btn}';
+    }}
+    </style>
+    """
+    
     if hasattr(st, "html"):
         st.html(payload)
     else:
@@ -66,7 +110,6 @@ def _inject_css():
 
 _inject_css()
 
-# ============================================================
 # 3. CONSTANTS & CONFIG
 # ============================================================
 try:
@@ -93,10 +136,13 @@ defaults_state = {
     "notes":               "",
     "show_raw":            False,
     "dark_mode":           False,
+    "lang":                "en",
 }
 for k, v in defaults_state.items():
     if k not in st.session_state:
         st.session_state[k] = v
+
+lang = st.session_state.lang
 
 # ============================================================
 # 5. UTILITY FUNCTIONS
@@ -189,7 +235,7 @@ def create_txt(content: str) -> bytes:
     return clean.encode("utf-8")
 
 @st.cache_data(show_spinner=False)
-def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
+def create_html_export(content: str, title: str = "Export", generated_by: str = "Generated by") -> bytes:
     html = f"""<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -216,7 +262,7 @@ def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
 <body>
 <h1><i class="fa-solid fa-file-lines"></i> {title}</h1>
 <p class="meta">
-  <i class="fa-solid fa-robot"></i> Generated by Ink to text AI &mdash;
+  <i class="fa-solid fa-robot"></i> {generated_by} 
   {datetime.now().strftime('%Y-%m-%d %H:%M')}
 </p>
 <div>{clean_html(content)}</div>
@@ -225,7 +271,7 @@ def create_html_export(content: str, title: str = "DocuVision Export") -> bytes:
     return html.encode("utf-8")
 
 @st.cache_data(show_spinner=False)
-def create_word_doc(content: str) -> bytes:
+def create_word_doc(content: str, title: str = "Extracted Text", generated_by: str = "Generated: ") -> bytes:
     doc = Document()
     for section in doc.sections:
         section.right_to_left = True
@@ -237,14 +283,14 @@ def create_word_doc(content: str) -> bytes:
         section.right_margin  = Cm(2.5)
 
     title_para = doc.add_heading("", level=0)
-    title_run  = title_para.add_run("Ink to text AI — Extracted Text")
+    title_run  = title_para.add_run(title)
     title_run.font.size = Pt(18)
     title_run.font.color.rgb = RGBColor(79, 70, 229)
     title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     meta = doc.add_paragraph()
     meta.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    meta_run = meta.add_run(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    meta_run = meta.add_run(f"{generated_by}{datetime.now().strftime('%Y-%m-%d %H:%M')}")
     meta_run.font.size = Pt(9)
     meta_run.font.color.rgb = RGBColor(100, 116, 139)
     doc.add_paragraph()
@@ -338,7 +384,9 @@ class ArabicPDF(FPDF):
         self.set_y(2)
         self.set_text_color(*self.WHITE)
         self.set_arabic_font(8)
-        stamp = f"Ink to text AI  |  {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        # Using instance variable set externally
+        header_text = getattr(self, "pdf_header_text", "Ink to text AI | ")
+        stamp = f"{header_text}{datetime.now().strftime('%Y-%m-%d %H:%M')}"
         self.cell(0, 8, shape_arabic(stamp), align='C')
         self.set_text_color(*self.DARK)
         self.set_y(16)
@@ -350,7 +398,8 @@ class ArabicPDF(FPDF):
         self.set_y(-10)
         self.set_text_color(*self.SLATE)
         self.set_arabic_font(7)
-        page_text = shape_arabic(f"صفحة {self.page_no()}")
+        page_word = getattr(self, "pdf_page_word", "Page ")
+        page_text = shape_arabic(f"{page_word}{self.page_no()}")
         self.cell(0, 5, page_text, align='C')
 
     def section_title(self, title: str):
@@ -423,7 +472,7 @@ def _extract_tables(html: str) -> list[dict]:
     return tables_data
 
 @st.cache_data(show_spinner=False)
-def create_pdf(content: str) -> bytes | None:
+def create_pdf(content: str, header_text: str = "", page_word: str = "") -> bytes | None:
     """
     Generate a professional Arabic-ready PDF from extracted content.
     """
@@ -435,6 +484,8 @@ def create_pdf(content: str) -> bytes | None:
         font_path    = os.path.join(current_dir, 'Arial.ttf')
 
         pdf = ArabicPDF(font_path=font_path)
+        pdf.pdf_header_text = header_text
+        pdf.pdf_page_word = page_word
         _ = pdf.add_page()
 
         cleaned = clean_html(content)
@@ -602,18 +653,27 @@ extra_instr = ""
 max_img_dim = 2048
 
 # ============================================================
-# 9. NAVIGATION & THEME TOGGLE
+# 9. FLOATING COMMAND CENTER (Theme & Language)
 # ============================================================
-# 9. THEME TOGGLE (Top Right)
-# ============================================================
-st.markdown('<div id="theme-btn-anchor"></div>', unsafe_allow_html=True)
 _is_dark = st.session_state.get("dark_mode", False)
-if _is_dark:
-    theme_btn = st.button("☀️ Light Mode", key="theme_toggle")
-else:
-    theme_btn = st.button("🌙 Dark Mode", key="theme_toggle")
 
-if theme_btn:
+st.markdown(f"""
+<div id="cmd-bar-anchor"></div>
+""", unsafe_allow_html=True)
+
+if lang == "en":
+    if st.button(T[lang]["lang_toggle_ar"], key="lang_ar", icon=":material/language:"):
+        st.session_state.lang = "ar"
+        st.rerun()
+else:
+    if st.button(T[lang]["lang_toggle_en"], key="lang_en", icon=":material/language:"):
+        st.session_state.lang = "en"
+        st.rerun()
+
+theme_label = T[lang]["theme_light"] if _is_dark else T[lang]["theme_dark"]
+theme_icon = ":material/light_mode:" if _is_dark else ":material/dark_mode:"
+
+if st.button(theme_label, key="theme_toggle", icon=theme_icon):
     st.session_state.dark_mode = not _is_dark
     st.rerun()
 
@@ -621,20 +681,20 @@ if theme_btn:
 # 10. MAIN NAVIGATION TABS
 # ============================================================
 tab_single, tab_batch, tab_history, tab_guide = st.tabs([
-    "Single Document",
-    "Batch Processing",
-    "History",
-    "How to Use"
+    T[lang]["tab_single"],
+    T[lang]["tab_batch"],
+    T[lang]["tab_history"],
+    T[lang]["tab_guide"]
 ])
 
 # ============================================================
 # TAB 1: SINGLE DOCUMENT
 # ============================================================
 with tab_single:
-    st.markdown("""
+    st.markdown(f"""
 <div class="simple-header">
-    <h1>Ink to text AI</h1>
-    <p>Convert handwritten notes to digital text. AI-powered recognition for messy handwriting.</p>
+    <h1>{T[lang]['app_title']}</h1>
+    <p>{T[lang]['app_desc']}</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -679,16 +739,16 @@ with tab_single:
 
             _b1, _b2, _b3 = st.columns([1,2,1])
             with _b2:
-                extract_clicked = st.button("Extract Text Now", key="extract_btn", use_container_width=True)
+                extract_clicked = st.button(T[lang]["extract_btn"], key="extract_btn", use_container_width=True)
 
             if extract_clicked:
                 prompt = build_prompt(extraction_mode, extra_instr, output_lang)
 
                 progress_placeholder = st.empty()
-                progress_placeholder.markdown("""
+                progress_placeholder.markdown(f"""
                 <div class="processing-container">
                     <div class="processing-spinner"></div>
-                    <div class="processing-text">AI is deep-scanning your document...</div>
+                    <div class="processing-text">{T[lang]["processing_spinner"]}</div>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -714,11 +774,11 @@ with tab_single:
 
                     progress_placeholder.empty()
                     st.balloons()
-                    st.toast(f"Extraction Successful in {elapsed}s", icon="✅")
+                    st.toast(T[lang]["extraction_success"].format(time=elapsed), icon="✅")
 
                 except Exception as e:
                     progress_placeholder.empty()
-                    st.error(f"Extraction failed: {e}")
+                    st.error(T[lang]["extraction_failed"].format(error=str(e)))
         else:
             pass # We removed the Awaiting Upload box since the dropzone itself is obvious
 
@@ -727,7 +787,7 @@ with tab_single:
     # ============================================================
     st.markdown("<hr style='margin:3rem 0; border:var(--border);'>", unsafe_allow_html=True)
     st.markdown(
-        '<div class="card-title" style="justify-content:center;font-size:1.8rem;margin-bottom:2rem;"><i class="fa-solid fa-file-export" style="color:var(--accent);"></i> Extracted Content</div>',
+        f'<div class="card-title" style="justify-content:center;font-size:1.8rem;margin-bottom:2rem;"><i class="fa-solid fa-file-export" style="color:var(--accent);"></i> {T[lang]["extracted_content_title"]}</div>',
         unsafe_allow_html=True
     )
 
@@ -736,14 +796,14 @@ with tab_single:
         display = clean_html(result)
 
         r1, r2, r3, r4 = st.columns(4)
-        r1.metric("Words",    f"{count_words(result):,}")
-        r2.metric("Chars",    f"{count_chars(result):,}")
-        r3.metric("Language", detect_language(result))
-        r4.metric("Type",     detect_content_type(result))
+        r1.metric(T[lang]["metric_words"], f"{count_words(result):,}")
+        r2.metric(T[lang]["metric_chars"], f"{count_chars(result):,}")
+        r3.metric(T[lang]["metric_lang"], detect_language(result))
+        r4.metric(T[lang]["metric_type"], detect_content_type(result))
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        view_tab, edit_tab = st.tabs(["Preview", "Edit & Notes"])
+        view_tab, edit_tab = st.tabs([T[lang]["tab_preview"], T[lang]["tab_edit"]])
 
         with view_tab:
             preview_html = display.replace('\n', '<br>')
@@ -751,27 +811,27 @@ with tab_single:
 
         with edit_tab:
             edited = st.text_area(
-                "Edit extracted text:",
+                T[lang]["edit_label"],
                 value=strip_tags(display),
                 height=300,
                 label_visibility="collapsed"
             )
             st.session_state.notes = st.text_area(
-                "Add notes:",
+                T[lang]["notes_label"],
                 value=st.session_state.notes,
                 height=100,
-                placeholder="Your personal notes about this document..."
+                placeholder=T[lang]["notes_placeholder"]
             )
-            if st.button("Save Edits", key="save_edit"):
+            if st.button(T[lang]["save_edits"], key="save_edit"):
                 st.session_state.extracted_result = edited
-                st.success("Edits saved!")
+                st.success(T[lang]["edits_saved"])
 
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown(
-            '<div style="font-size:0.75rem;font-weight:600;color:var(--text3);margin-bottom:0.8rem;text-align:center;text-transform:uppercase;letter-spacing:0.06em;">'
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
-            'Export Options'
-            '</div>',
+            f'<div style="font-size:0.75rem;font-weight:600;color:var(--text3);margin-bottom:0.8rem;text-align:center;text-transform:uppercase;letter-spacing:0.06em;">'
+            f'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>'
+            f'{T[lang]["export_options"]}'
+            f'</div>',
             unsafe_allow_html=True
         )
 
@@ -779,9 +839,9 @@ with tab_single:
         base_name = f"DocuVision_{export_ts}"
 
         # ── Export Cards: Direct HTML downloads (Zero Streamlit UI Artifacts) ──
-        word_data = create_word_doc(result)
+        word_data = create_word_doc(result, title=T[lang]["word_title"], generated_by=T[lang]["word_generated"])
         word_b64  = base64.b64encode(word_data).decode()
-        pdf_data  = create_pdf(result)
+        pdf_data  = create_pdf(result, header_text=T[lang]["pdf_title"], page_word=T[lang]["pdf_page"])
         pdf_b64   = base64.b64encode(pdf_data).decode() if pdf_data else None
 
         _ec1, _ec2, _ec3, _ec4 = st.columns([0.7, 2, 2, 0.7])
@@ -794,8 +854,8 @@ with tab_single:
                     <div class="step-num">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     </div>
-                    <h4>Word Document</h4>
-                    <div class="step-text">Editable .docx format with full table support and RTL layout.</div>
+                    <h4>{T[lang]["export_word"]}</h4>
+                    <div class="step-text">{T[lang]["export_word_desc"]}</div>
                 </div>
             </a>
             """, unsafe_allow_html=True)
@@ -809,17 +869,17 @@ with tab_single:
                         <div class="step-num">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="M9 15h6"></path></svg>
                         </div>
-                        <h4>PDF Document</h4>
-                        <div class="step-text">Professional Arabic-ready PDF with styled headings and tables.</div>
+                        <h4>{T[lang]["export_pdf"]}</h4>
+                        <div class="step-text">{T[lang]["export_pdf_desc"]}</div>
                     </div>
                 </a>
                 """, unsafe_allow_html=True)
             else:
-                st.markdown("""
+                st.markdown(f"""
                 <div class="step-item" style="opacity:0.5; filter:grayscale(1); cursor:not-allowed;">
                     <div class="step-num" style="background:#94a3b8;">!</div>
-                    <h4>PDF Error</h4>
-                    <div class="step-text">Could not generate PDF for this document.</div>
+                    <h4>{T[lang]["export_pdf_err"]}</h4>
+                    <div class="step-text">{T[lang]["export_pdf_err_desc"]}</div>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -867,38 +927,37 @@ with tab_single:
         #     else:
         #         st.button("📊 CSV (No tables)", disabled=True)
 
-        with st.expander("Raw Output (for copy)", expanded=False):
+        with st.expander(T[lang]["raw_output"], expanded=False):
             st.code(strip_tags(display), language=None)
 
-
     else:
-        st.markdown("""
+        st.markdown(f"""
         <div style="text-align:center;padding:4rem 2rem;border:1px solid #e5e7eb;border-radius:1rem;">
             <i class="fa-solid fa-magnifying-glass"
                style="font-size:2.5rem;margin-bottom:0.5rem;display:block;color:#cbd5e1;"></i>
-            <div style="font-weight:500;">Awaiting Extraction</div>
-            <div style="font-size:0.8rem;color:#6b7280;">Upload an image and click Extract to see results here.</div>
+            <div style="font-weight:500;">{T[lang]["awaiting_title"]}</div>
+            <div style="font-size:0.8rem;color:#6b7280;">{T[lang]["awaiting_desc"]}</div>
         </div>
         <div class="steps-row" style="margin-top:1.5rem">
             <div class="step-item">
                 <div class="step-num">1</div>
-                <div><i class="fa-solid fa-upload icon-blue"></i> Upload</div>
-                <div class="step-text">Drop your image</div>
+                <div><i class="fa-solid fa-upload icon-blue"></i> {T[lang]["step_1"]}</div>
+                <div class="step-text">{T[lang]["step_1_desc"]}</div>
             </div>
             <div class="step-item">
                 <div class="step-num">2</div>
-                <div><i class="fa-solid fa-sliders icon-blue"></i> Configure</div>
-                <div class="step-text">Choose mode &amp; options</div>
+                <div><i class="fa-solid fa-sliders icon-blue"></i> {T[lang]["step_2"]}</div>
+                <div class="step-text">{T[lang]["step_2_desc"]}</div>
             </div>
             <div class="step-item">
                 <div class="step-num">3</div>
-                <div><i class="fa-solid fa-robot icon-blue"></i> Extract</div>
-                <div class="step-text">AI processes</div>
+                <div><i class="fa-solid fa-robot icon-blue"></i> {T[lang]["step_3"]}</div>
+                <div class="step-text">{T[lang]["step_3_desc"]}</div>
             </div>
             <div class="step-item">
                 <div class="step-num">4</div>
-                <div><i class="fa-solid fa-download icon-blue"></i> Export</div>
-                <div class="step-text">Download in 6 formats</div>
+                <div><i class="fa-solid fa-download icon-blue"></i> {T[lang]["step_4"]}</div>
+                <div class="step-text">{T[lang]["step_4_desc"]}</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -908,18 +967,18 @@ with tab_single:
 # ============================================================
 with tab_batch:
     st.markdown(
-        '<div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> Batch Document Processing</div>',
+        f'<div class="card-title"><i class="fa-solid fa-boxes-stacked"></i> {T[lang]["batch_title"]}</div>',
         unsafe_allow_html=True
     )
     st.markdown(
-        "<p style='color:#6b7280;font-size:0.85rem;margin-bottom:1rem;'>"
-        "Upload multiple images and extract text from all at once. Results are bundled into a ZIP file."
-        "</p>",
+        f"<p style='color:#6b7280;font-size:0.85rem;margin-bottom:1rem;'>"
+        f"{T[lang]['batch_desc']}"
+        f"</p>",
         unsafe_allow_html=True
     )
 
     batch_files = st.file_uploader(
-        "Upload multiple images",
+        T[lang]["batch_upload"],
         type=SUPPORTED_FORMATS,
         accept_multiple_files=True,
         key="batch_uploader",
@@ -931,7 +990,7 @@ with tab_batch:
             f"<div style='background:#f3f4f6;border-radius:0.75rem;padding:0.5rem 1rem;"
             f"margin-bottom:1rem;font-size:0.85rem;'>"
             f"<i class='fa-solid fa-folder-open' style='color:#4f46e5;'></i>"
-            f" <strong>{len(batch_files)} files</strong> selected</div>",
+            f" <strong>{len(batch_files)} {T[lang]['batch_selected']}</strong></div>",
             unsafe_allow_html=True
         )
 
@@ -941,34 +1000,34 @@ with tab_batch:
                 preview_img = ImageOps.exif_transpose(Image.open(f))
                 st.image(preview_img, use_container_width=True, caption=f.name[:18])
         if len(batch_files) > 4:
-            st.caption(f"... and {len(batch_files)-4} more files")
+            st.caption(T[lang]["batch_more"].format(count=len(batch_files)-4))
 
         st.markdown("<br>", unsafe_allow_html=True)
         bc1, bc2 = st.columns(2)
         with bc1:
             batch_mode = st.selectbox(
-                "Extraction mode for all files",
+                T[lang]["batch_mode_label"],
                 ["standard", "enhanced", "table_focus", "summary", "key_value"],
                 format_func=lambda x: {
-                    "standard":    "Standard",
-                    "enhanced":    "Enhanced",
-                    "table_focus": "Tables Only",
-                    "summary":     "Extract + Summarize",
-                    "key_value":   "Key-Value / Forms",
+                    "standard":    T[lang]["mode_standard"],
+                    "enhanced":    T[lang]["mode_enhanced"],
+                    "table_focus": T[lang]["mode_table"],
+                    "summary":     T[lang]["mode_summary"],
+                    "key_value":   T[lang]["mode_kv"],
                 }[x]
             )
         with bc2:
-            batch_enhance = st.checkbox("Apply enhancement to all", value=True)
+            batch_enhance = st.checkbox(T[lang]["batch_enhance_label"], value=True)
 
-        if st.button("Start Batch Extraction", key="batch_btn"):
+        if st.button(T[lang]["batch_start_btn"], key="batch_btn"):
             batch_results  = []
-            batch_progress = st.progress(0, text="Starting batch...")
+            batch_progress = st.progress(0, text=T[lang]["batch_starting"])
             batch_status   = st.empty()
             total          = len(batch_files)
 
             for idx, bf in enumerate(batch_files):
                 try:
-                    batch_status.markdown(f"Processing **{bf.name}** ({idx+1}/{total})…")
+                    batch_status.markdown(T[lang]["batch_processing_file"].format(filename=bf.name, current=idx+1, total=total))
                     img = ImageOps.exif_transpose(Image.open(bf))
                     if batch_enhance:
                         img = enhance_image(img, contrast=1.3, sharpness=1.4, brightness=1.05)
@@ -991,24 +1050,24 @@ with tab_batch:
                         "time":     0,
                         "status":   f"error: {e}"
                     })
-                batch_progress.progress((idx + 1) / total, text=f"Processed {idx+1}/{total}")
+                batch_progress.progress((idx + 1) / total, text=T[lang]["batch_processed_progress"].format(current=idx+1, total=total))
 
             batch_status.empty()
             batch_progress.empty()
             st.session_state.batch_results = batch_results
 
             success_count = sum(1 for r in batch_results if r["status"] == "success")
-            st.success(f"Batch complete: {success_count}/{total} files processed successfully")
+            st.success(T[lang]["batch_complete"].format(success=success_count, total=total))
 
         if st.session_state.batch_results:
             st.markdown("---")
-            st.markdown("### Batch Results")
+            st.markdown(f"### {T[lang]['batch_results_title']}")
             total_words = sum(r["words"] for r in st.session_state.batch_results)
             bm1, bm2, bm3 = st.columns(3)
-            bm1.metric("Files Processed", len(st.session_state.batch_results))
-            bm2.metric("Total Words", f"{total_words:,}")
+            bm1.metric(T[lang]["batch_files_processed"], len(st.session_state.batch_results))
+            bm2.metric(T[lang]["batch_total_words"], f"{total_words:,}")
             bm3.metric(
-                "Success Rate",
+                T[lang]["batch_success_rate"],
                 f"{sum(1 for r in st.session_state.batch_results if r['status']=='success')}"
                 f"/{len(st.session_state.batch_results)}"
             )
@@ -1034,7 +1093,7 @@ with tab_batch:
                         zf.writestr(f"{base_name}.txt", strip_tags(clean_html(r["result"])))
             zip_buf.seek(0)
             st.download_button(
-                "Download All as ZIP (.txt files)",
+                T[lang]["batch_dl_zip"],
                 data=zip_buf.getvalue(),
                 file_name=f"DocuVision_Batch_{datetime.now().strftime('%Y%m%d_%H%M')}.zip",
                 mime="application/zip",
@@ -1046,30 +1105,30 @@ with tab_batch:
 # ============================================================
 with tab_history:
     st.markdown(
-        '<div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Processing History</div>',
+        f'<div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> {T[lang]["hist_title"]}</div>',
         unsafe_allow_html=True
     )
     st.markdown(
-        "<p style='color:#6b7280;font-size:0.85rem;margin-bottom:1rem;'>"
-        "Review all documents processed during this session."
-        "</p>",
+        f"<p style='color:#6b7280;font-size:0.85rem;margin-bottom:1rem;'>"
+        f"{T[lang]['hist_desc']}"
+        f"</p>",
         unsafe_allow_html=True
     )
 
     if not st.session_state.processing_history:
         st.markdown(
-            "<div style='text-align:center;padding:5rem 2rem;border:2px dashed var(--border2);border-radius:1.5rem;background:var(--bg2);'>"
-            "<i class='fa-solid fa-clock-rotate-left' style='font-size:3.5rem;color:var(--border2);display:block;margin-bottom:1rem;'></i>"
-            "<h3 style='margin:0 0 0.5rem 0;color:var(--text);font-size:1.3rem;font-weight:600;'>History is empty</h3>"
-            "<p style='color:var(--text3);font-size:0.95rem;margin:0;'>Process your first document, and it will be safely logged right here.</p>"
-            "</div>",
+            f"<div style='text-align:center;padding:5rem 2rem;border:2px dashed var(--border2);border-radius:1.5rem;background:var(--bg2);'>"
+            f"<i class='fa-solid fa-clock-rotate-left' style='font-size:3.5rem;color:var(--border2);display:block;margin-bottom:1rem;'></i>"
+            f"<h3 style='margin:0 0 0.5rem 0;color:var(--text);font-size:1.3rem;font-weight:600;'>{T[lang]['hist_empty']}</h3>"
+            f"<p style='color:var(--text3);font-size:0.95rem;margin:0;'>{T[lang]['hist_empty_desc']}</p>"
+            f"</div>",
             unsafe_allow_html=True
         )
     else:
         st.markdown('<div class="history-search">', unsafe_allow_html=True)
         hist_search = st.text_input(
-            "Search history by filename...",
-            placeholder="🔍 Type a filename to filter...",
+            T[lang]["hist_search"],
+            placeholder=T[lang]["hist_search_placeholder"],
             label_visibility="collapsed"
         )
         st.markdown('</div><br>', unsafe_allow_html=True)
@@ -1080,29 +1139,29 @@ with tab_history:
         )
 
         for i, h in enumerate(filtered):
-            expander_title = f"📄 {h['filename']} &nbsp;•&nbsp; 🕒 {h['timestamp']} &nbsp;•&nbsp; 📝 {h['words']:,} words"
+            expander_title = f"📄 {h['filename']} &nbsp;•&nbsp; 🕒 {h['timestamp']} &nbsp;•&nbsp; 📝 {h['words']:,} {T[lang]['metric_words']}"
             with st.expander(expander_title, expanded=(i == 0)):
                 hc1, hc2, hc3, hc4 = st.columns(4)
-                hc1.metric("Words", f"{h['words']:,}")
-                hc2.metric("Chars", f"{h['chars']:,}")
-                hc3.metric("Language", h["lang"])
-                hc4.metric("Speed", f"{h['time']}s")
+                hc1.metric(T[lang]["metric_words"], f"{h['words']:,}")
+                hc2.metric(T[lang]["metric_chars"], f"{h['chars']:,}")
+                hc3.metric(T[lang]["metric_lang"], h["lang"])
+                hc4.metric(T[lang]["hist_speed"], f"{h['time']}s")
                 
                 hist_html = clean_html(h["result"]).replace('\n', '<br>')
                 st.markdown(f'<div class="output-box" style="margin-top:1rem;margin-bottom:1.5rem;">{hist_html}</div>', unsafe_allow_html=True)
 
-                st.markdown('<div style="font-size:0.8rem;color:var(--text3);margin-bottom:0.8rem;font-weight:600;">EXPORT RECORD</div>', unsafe_allow_html=True)
+                st.markdown(f'<div style="font-size:0.8rem;color:var(--text3);margin-bottom:0.8rem;font-weight:600;">{T[lang]["hist_export_record"]}</div>', unsafe_allow_html=True)
                 hd1, hd2, hd3, hd4 = st.columns([1, 1, 1, 1])
                 with hd1:
                     st.download_button(
-                        "📄 Word Doc",
-                        data=create_word_doc(h["result"]),
+                        T[lang]["hist_dl_word"],
+                        data=create_word_doc(h["result"], title=T[lang]["word_title"], generated_by=T[lang]["word_generated"]),
                         file_name=f"{os.path.splitext(h['filename'])[0]}.docx",
                         key=f"hist_word_{i}"
                     )
                 with hd2:
                     st.download_button(
-                        "📝 Plain Text",
+                        T[lang]["hist_dl_txt"],
                         data=create_txt(h["result"]),
                         file_name=f"{os.path.splitext(h['filename'])[0]}.txt",
                         key=f"hist_txt_{i}"
@@ -1116,7 +1175,7 @@ with tab_history:
                     zf.writestr(f"{base}.txt", strip_tags(clean_html(h["result"])))
             all_zip.seek(0)
             st.download_button(
-                "Export All History as ZIP",
+                T[lang]["hist_dl_all"],
                 data=all_zip.getvalue(),
                 file_name=f"DocuVision_History_{datetime.now().strftime('%Y%m%d')}.zip",
                 mime="application/zip",
@@ -1127,10 +1186,10 @@ with tab_history:
 # TAB 4: HOW TO USE
 # ============================================================
 with tab_guide:
-    st.markdown("""
+    st.markdown(f"""
     <div style="text-align:center; margin-bottom: 2.5rem; margin-top: 1rem;">
-        <h2 style="font-weight:700; font-size:1.8rem; color:var(--text); margin-bottom:0.8rem;">How to Use Ink to Text AI</h2>
-        <p style="color:var(--text2); font-size:1rem; max-width:650px; margin:0 auto;">A comprehensive guide to digitizing handwritten notes and processing documents using AI-driven optical character recognition.</p>
+        <h2 style="font-weight:700; font-size:1.8rem; color:var(--text); margin-bottom:0.8rem;">{T[lang]["guide_title"]}</h2>
+        <p style="color:var(--text2); font-size:1rem; max-width:650px; margin:0 auto;">{T[lang]["guide_desc"]}</p>
     </div>
 
     <div class="steps-row">
@@ -1138,79 +1197,53 @@ with tab_guide:
             <div class="step-num">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
             </div>
-            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">1. Upload Document</h4>
-            <div class="step-text" style="font-size:0.9rem;">Upload scanned documents or images containing handwriting. Supported formats include JPG, PNG, and WEBP.</div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">{T[lang]["guide_step1"]}</h4>
+            <div class="step-text" style="font-size:0.9rem;">{T[lang]["guide_step1_desc"]}</div>
         </div>
         <div class="step-item">
             <div class="step-num">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
-            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">2. Configure Settings</h4>
-            <div class="step-text" style="font-size:0.9rem;">Select your extraction mode from the sidebar and apply any necessary language constraints or instructions.</div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">{T[lang]["guide_step2"]}</h4>
+            <div class="step-text" style="font-size:0.9rem;">{T[lang]["guide_step2_desc"]}</div>
         </div>
         <div class="step-item">
             <div class="step-num">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             </div>
-            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">3. Process & Export</h4>
-            <div class="step-text" style="font-size:0.9rem;">Execute the extraction and download the structured output as an editable Word Document (.docx) or Plain Text file.</div>
+            <h4 style="font-weight:600; font-size:1.05rem; margin-bottom:0.5rem; color:var(--text);">{T[lang]["guide_step3"]}</h4>
+            <div class="step-text" style="font-size:0.9rem;">{T[lang]["guide_step3_desc"]}</div>
         </div>
     </div>
     <hr>
     <div class="card-title" style="justify-content:center; margin-bottom:1.5rem; margin-top:1rem; font-size:1.1rem;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-        System Settings & Developer Info
+        {T[lang]["guide_sys_settings"]}
     </div>
     """, unsafe_allow_html=True)
 
     gc1, gc2 = st.columns(2)
     with gc1:
-        with st.expander("Extraction Modes", expanded=True):
-            st.markdown("""
-            Select the appropriate mode in the sidebar based on your document structure:
-            - **Standard Extraction**: General purpose text extraction for letters, notes, and paragraphs.
-            - **Enhanced Accuracy**: Recommended for messy handwriting or complex document layouts.
-            - **Tables / Spreadsheets**: Interprets grids and outputs data in structured Markdown tables.
-            - **Extract + Summarize**: Appends a highly condensed summary after the full text extraction.
-            - **Key-Value / Forms**: Extracts labeled form fields and ID data into a rigid two-column table.
-            """)
+        with st.expander(T[lang]["guide_exp_modes"], expanded=True):
+            st.markdown(T[lang]["guide_exp_modes_desc"])
         
-        with st.expander("Sidebar Settings & Controls"):
-            st.markdown("""
-            Active configuration options available in the project sidebar prior to processing:
-            - **Output Language**: By default, the AI auto-detects the document language. You can strictly force a target language (like Arabic, French, or English) to maintain consistency.
-            - **AI Accuracy Temperature**: Adjusts the creativity parameter from `0.0` to `1.0`. Keep it at 0.0 for literal, strict transcription formatting without AI "guessing" words.
-            - **Custom Instructions**: Inject a specific directive into the LLM pipeline. Useful for commanding the AI to "Ignore the handwritten watermark" or "Translate everything to English immediately".
-            """)
+        with st.expander(T[lang]["guide_exp_settings"]):
+            st.markdown(T[lang]["guide_exp_settings_desc"])
             
     with gc2:
-        with st.expander("About the Developer", expanded=True):
-            st.markdown("""
-            **Qays Hijjawi**
-            *Software Developer & BTEC IT Level 3 Student*
+        with st.expander(T[lang]["guide_exp_dev"], expanded=True):
+            st.markdown(T[lang]["guide_exp_dev_desc"])
             
-            Passionate about building highly functional, purposeful AI applications and modern web platforms. Specializing in Python, Streamlit, and Full-Stack web architecture.
-            
-            *"Lost in code, found in purpose ✨"*
-            """)
-            
-        with st.expander("Connect & Contributions"):
-            st.markdown("""
-            This project utilizes the Gemini 2.0 Flash engine combined with an advanced custom UI architecture built natively in Python.
-            
-            - **GitHub**: [github.com/q-gsx](https://github.com/q-gsx)
-            - **Project**: Ink to Text AI Architecture
-            
-            Follow my GitHub for more open-source web and AI innovations.
-            """, unsafe_allow_html=True)
+        with st.expander(T[lang]["guide_exp_conn"]):
+            st.markdown(T[lang]["guide_exp_conn_desc"], unsafe_allow_html=True)
 
 # ============================================================
 # 11. FOOTER
 # ============================================================
-st.markdown("""
+st.markdown(f"""
 <div class="app-footer">
     <i class="fa-solid fa-pen-nib"></i>
-    <strong>Ink to text AI by Qays Hijjawi</strong>
+    <strong>{T[lang]["footer_text"]}</strong>
     <br><span>&copy; 2026</span>
 </div>
 """, unsafe_allow_html=True)
