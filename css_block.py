@@ -137,25 +137,21 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
     /* ============================================================
     /* COMMAND BAR (Language & Theme Toggles)
     /* ============================================================ */
-    .element-container:has(#cmd-bar-anchor) { display: none !important; }
-    
-    /* Robust Selectors for Cloud/Local parity */
-    /* First Button (Language) */
-    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
+    /* Robust Command Bar Positioning (Single Container) */
+    [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) {
         position: absolute !important;
-        top: 4.7rem;
-        right: 11.9rem;
+        top: 4.55rem;
+        right: 3.5rem;
         z-index: 1000;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        gap: 0.5rem;
         width: auto !important;
+        background: transparent !important;
     }
-    /* Second Button (Theme) */
-    .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
-        position: absolute !important;
-        top: 4.7rem;
-        right: 3.8rem;
-        z-index: 1000;
-        width: auto !important;
-    }
+    /* Hide the wrapper div itself */
+    .element-container:has(#cmd-bar-wrapper) { display: none !important; }
 
     /* MOBILE RESPONSIVENESS */
     @media (max-width: 768px) {
@@ -169,28 +165,17 @@ h1,h2,h3 { font-weight:600 !important; letter-spacing:-0.02em !important; color:
         .stTabs {
             margin-top: 1.8rem !important; /* Reduced space between buttons and tabs */
         }
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(2) {
-            position: absolute !important;
+        /* Center the entire command bar container on mobile */
+        [data-testid="stVerticalBlock"]:has(> .element-container > div > #cmd-bar-wrapper) {
             top: 1.2rem !important;
-            left: 0 !important;
-            right: 50% !important;
-            display: flex !important;
-            justify-content: flex-end !important;
-            padding-right: 0.8rem !important;
-            width: 50% !important;
-            z-index: 1001;
-        }
-        .element-container:has(#cmd-bar-anchor) ~ .element-container:has(button):nth-of-type(3) {
-            position: absolute !important;
-            top: 1.2rem !important;
-            left: 50% !important;
             right: 0 !important;
-            display: flex !important;
-            justify-content: flex-start !important;
-            padding-left: 0.8rem !important;
-            width: 50% !important;
-            z-index: 1001;
+            left: 0 !important;
+            justify-content: center !important;
+            width: 100% !important;
+            gap: 0.8rem !important;
         }
+        /* Hide individual containers logic if any remnants exist */
+        .element-container:has(#cmd-bar-anchor) { display: none !important; }
         /* Buttons: Ensure visibility in both themes */
         .element-container:has(#cmd-bar-anchor) ~ .element-container button {
             background: transparent !important;
